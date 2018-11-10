@@ -1,0 +1,113 @@
+//Write the mongo commands to answer each of the following questions.
+//For each problem use the aggregate function to create the solution.
+//Database to use.
+use game
+
+
+//1. How many documents are there in the pokemon collection?
+
+db.pokemon.aggregate(
+	{$group: {_id: null, count: {$sum: 1}}}	
+)
+
+
+//2. How many of each candy is there?
+
+db.pokemon.aggregate(
+	{$group: {_id: "$candy", count: {$sum: 1}}}	
+)
+
+
+//3. How many of each candy is there? Sort by count with most first.
+
+db.pokemon.aggregate(
+	{$group: {_id: "$candy", count: {$sum: 1}}},
+	{$sort: {count: -1}}	
+)
+
+
+//4. For each type of candy what is the total candy count and the 
+//   average candy count? Sort by total candy with most first.
+
+db.pokemon.aggregate(
+	{$group: {_id: "$candy", totalCandy: {$sum: "$candy_count"}, 
+	avgCandy: {$avg: "$candy_count"}}},
+	{$sort: {totalCandy: -1 }}	
+)
+
+
+//5. How many different types of candy are there?
+
+db.pokemon.aggregate(
+	{$group: {_id: "$candy", totalCandy: {$sum: "$candy_count"}, 
+	avgCandy: {$avg: "$candy_count"}}},
+	{$group: {_id: null, count: {$sum: 1}}}
+)
+
+
+//6.  How many documents have each egg type?
+
+db.pokemon.aggregate(
+	{$group: {_id: "$egg", howMany: {$sum: 1}}}
+)
+
+
+//7. How many different types of egg are there?
+
+db.pokemon.aggregate(
+	{$group: {_id: "$egg", howMany: {$sum: 1}}},
+	{$group: {_id: null, count:{$sum: 1}}}
+)
+
+//8. What is the average average spawns for each different type
+//   of egg? Sort by average with smallest on top.
+
+db.pokemon.aggregate(
+	{$group: {_id: "$egg", avgSpawns: {$avg: "$avg_spawns"}}},
+	{$sort: {avgSpawns: 1}}
+)
+
+//9. What is the average candy count, max candy count, and 
+//   min candy count for each different type of egg?
+
+db.pokemon.aggregate(
+	{$group: {_id: "$egg", avgCount: {$avg: "$candy_count"},
+	maxCount: {$max: "$candy_count"},
+	minCount: {$min: "$candy_count"}}}
+)
+
+//10. What is the total candy count, average spawn chance, and 
+//    max avg spawns for each different type of egg?  
+
+db.pokemon.aggregate(
+	{$group: {_id: "$egg", totalCandy: {$sum: "$candy_count"},
+	avgSpawmChance: {$avg: "$spawn_chance"},
+	maxAvgSpawns: {$max: "$avg_spawns"} }}
+)
+
+//11. What different types of candy do Fire type pokemon have? For each type
+//    of candy list how many of that candy there are, the total candy count 
+//    and the average candy count. List in order by how many there are with 
+//    the largest first.
+
+db.pokemon.aggregate(
+	{$match: {type: "Fire"}},
+	{$group: {_id: "$candy", count: {$sum: 1}, totalCandy: {$sum: "$candy_count"},
+	avgCount: {$avg: "$candy_count"} }},
+	{$sort: {count: -1}}
+)
+
+//12. What different types of candy do Fire type pokemon have? For each type
+//    of candy list how many of that candy there are, the total candy count 
+//    and the average candy count.  Only list those that have more than 0
+//    for the candy total. List in order by how many there are with the 
+//    largest first.
+
+db.pokemon.aggregate(
+	{$match: {type: "Fire"}},
+	{$group: {_id: "$candy", count: {$sum: 1}, totalCandy: {$sum: "$candy_count"},
+	avgCount: {$avg: "$candy_count"} }},
+	{$match: {totalCandy: {$gt: 0}}},
+	{$sort: {count: -1}}
+	
+)

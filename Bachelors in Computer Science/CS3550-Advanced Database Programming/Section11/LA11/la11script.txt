@@ -1,0 +1,97 @@
+//Write mongo commands to answer the following
+
+//1. Write the command to use the game database
+
+use game
+
+//2. List the document that has id 79. Make it pretty :)
+
+db.pokemon.find( { id: 79 } ).pretty()
+
+//3. Which pokemon are "Not in Eggs"? Make it pretty :)
+
+db.pokemon.find( { egg: "Not in Eggs" } ).pretty()
+
+//4. How many are there that are "Not in eggs"?
+
+db.pokemon.find( { egg: "Not in Eggs" } ).count()
+
+//5. Only report one that is "Not in eggs".
+
+db.pokemon.findOne( { egg: "Not in Eggs" } )
+
+//6. Have the output only include the name, type, and egg fields
+
+db.pokemon.findOne( { egg: "Not in Eggs" }, 
+	{ name: 1, type: 1, egg: 1, _id: 0 } )
+
+//7. Have the output include everything except the multipliers and weaknesses 
+
+db.pokemon.findOne( { egg: "Not in Eggs" },
+	{ multipliers: 0, weaknesses: 0 } )
+
+//8. How many pokemon have a multiplier of 2?
+
+db.pokemon.find( {multipliers: 2} ).count()
+
+//9. How many pokemon have a multiplier less than 2?
+
+db.pokemon.find( {multipliers: { $lt: 2 } } ).count()
+
+//10. How many pokemon have a multiplier greater than 3?
+
+db.pokemon.find( {multipliers: { $gt: 3 } } ).count()
+
+//11. How many pokemon have a multiplier greater than 2 and less than 3?
+
+db.pokemon.find( {multipliers: { $gt: 2, $lt: 3 } } ).count()
+
+//12. Update a record, set candy_count to 200 for the pokemon with id of 6
+
+db.pokemon.update( { id:6 }, { $set: { candy_count:200 } } ) 
+
+//13. Use insertOne to add a document with the following fields 
+//  id, num, name, type, height, weight, candy
+//  make the id greater than 200 then choose values for each of the 
+//  other fields
+
+db.pokemon.insertOne( {
+	id: 212,
+	num: "212",
+	name: "frosty",
+	type: ["ice", "grass"],
+	height: "0.82 m",
+	weight: "28 kg",
+	candy: "lollopop"
+})
+
+//14. Write a findOne command that finds the newly added document
+
+db.pokemon.findOne( {id:212} )
+
+//15. Use  insertMany to add two more documents - make the 
+//  id greater than the previous id then choose values for each of the 
+//  other fields id, num, name, height, weight, candy
+
+db.pokemon.insertMany( [{
+	id: 215,
+	num: "215",
+	name: "waldo",
+	type: ["poison", "bug"],
+	height: "0.63 m",
+	weight: "22 kg",
+	candy: "lollopop"	
+},{
+	id: 216,
+	num: "216",
+	name: "wildflower",
+	type: ["fire", "grass"],
+	height: "0.72 m",
+	weight: "22 kg",
+	candy: "lollopop"	
+}] )
+
+//16. Write a find command that finds only the two newly added documents 
+//  make it pretty
+
+db.pokemon.find( {id: {$in: [215, 216] } } ).pretty()

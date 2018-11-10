@@ -1,0 +1,103 @@
+USE master
+DROP DATABASE IF EXISTS StudentU;
+
+CREATE DATABASE StudentU
+ON PRIMARY (
+	NAME = StudentU,
+	FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\StudentU.mdf',
+	SIZE = 5120KB,
+	FILEGROWTH = 1024Kb)
+LOG ON (
+	NAME = StudentU_log,
+	FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\StudentU_log.ldf',
+	SIZE = 2048KB,
+	FILEGROWTH = 10%);
+
+GO
+
+USE StudentU
+
+
+CREATE TABLE User1 (
+	UserId CHAR(9) NOT NULL,
+	FirstName NVARCHAR(35) NOT NULL,
+	LastName NVARCHAR(35) NOT NULL,
+	Password NVARCHAR(128) NOT NULL,
+	UserType VARCHAR(3) NULL DEFAULT 'S' 
+		CONSTRAINT checkType CHECK 
+		(UserType IN ('S', 'A', 'I', 'IS', 'IA','AS','AIS')),
+	Department VARCHAR(8) NULL,
+	Major VARCHAR(24) NULL,
+	CONSTRAINT pkUser PRIMARY KEY (UserId)); 
+
+
+CREATE TABLE PhoneNumber (
+	PhoneNumber CHAR(10) NOT NULL,
+	UserId CHAR(9) NOT NULL,
+	CONSTRAINT pkPhoneNumber PRIMARY KEY ( PhoneNumber, UserId ),
+	CONSTRAINT fkUserIdPhoneNumber FOREIGN KEY (UserId)
+		REFERENCES User1 (UserId));
+
+CREATE TABLE Course (
+	CourseId INT IDENTITY NOT NULL,
+	CourseNumber SMALLINT NOT NULL,
+	Department VARCHAR(8) NOT NULL,
+	Title VARCHAR(128) NOT NULL,
+	Desciption VARCHAR(2048) NOT NULL,
+	Credits TINYINT NOT NULL DEFAULT 3,
+	CONSTRAINT pkCourse PRIMARY KEY (CourseId));
+
+
+CREATE TABLE Location (
+	LocationId SMALLINT IDENTITY NOT NULL,
+	Building CHAR(3) NOT NULL,
+	RoomNumber SMALLINT DEFAULT 0,
+	CONSTRAINT pkLocation PRIMARY KEY (LocationId));
+	
+
+CREATE TABLE Section (
+	SectionNumber INT IDENTITY NOT NULL,
+	Instructor CHAR(9) NULL,
+	Course INT NOT NULL,
+	Semester CHAR(2) NOT NULL 
+		CONSTRAINT checkSemester
+		CHECK (Semester IN ('SP', 'SU', 'FA')),
+	Year SMALLINT NOT NULL
+		CONSTRAINT checkYear
+		CHECK (Year > 1900 AND Year < 2050),
+	Location SMALLINT NOT NULL,
+	CONSTRAINT pkSection PRIMARY KEY (SectionNumber),
+	CONSTRAINT fkInstructorInSection 
+		FOREIGN KEY (Instructor) REFERENCES User1 (UserId),
+	CONSTRAINT fkCourseInSection 
+		FOREIGN KEY (Course) REFERENCES Course (CourseId),
+	CONSTRAINT fkLocationInSection 
+		FOREIGN KEY (Location) REFERENCES Location (LocationId));
+
+
+CREATE TABLE Registration (
+	UserId CHAR(9) NOT NULL,
+	SectionNumber INT NOT NULL,
+	Grade VARCHAR(2) NULL
+		CONSTRAINT gradeCheck
+		CHECK (Grade IN ('A', 'A-', 'B+', 'B', 'B-',
+		'C+', 'C', 'C-', 'D+', 'D', 'E', 'I')),
+	CONSTRAINT pkRegistration PRIMARY KEY (UserId, SectionNumber),
+	CONSTRAINT fkUserIdInRegistration 
+		FOREIGN KEY (UserId) REFERENCES User1 (UserId),
+	CONSTRAINT fkSectionNumberInRegistration
+		FOREIGN KEY (SectionNumber) REFERENCES Section (SectionNumber));
+
+
+CREATE TABLE Prerequisite (
+	CourseId INT NOT NULL,
+	PrerequisiteCourseId INT NOT NULL,
+	CONSTRAINT pkPrerequisite 
+		PRIMARY KEY (CourseId, PrerequisiteCourseId),
+	CONSTRAINT fkCourseIdInPrerequisite
+		FOREIGN KEY (CourseId) REFERENCES Course (CourseId),
+	CONSTRAINT fkPrerequisiteCourseIdInPrerequisite
+		FOREIGN KEY (PrerequisiteCourseId) REFERENCES Course (CourseId));
+
+
+

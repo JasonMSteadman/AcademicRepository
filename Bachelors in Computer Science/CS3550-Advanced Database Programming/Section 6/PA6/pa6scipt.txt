@@ -1,0 +1,375 @@
+
+--Set Management Studio to use the WellMoney2 database
+
+USE WellMoney2;
+
+
+--List all the users in the database
+--Include User first and last name
+
+SELECT FirstName, LastName	
+	FROM User1;
+
+
+--Which users have the first name Tim?
+--Include User first and last name
+
+SELECT FirstName, LastName	
+	FROM User1
+	WHERE FirstName = 'Tim';
+
+
+--Which users are employees? Use IN
+--Include User first name, last name, and user type
+
+SELECT FirstName, LastName, UserType	
+	FROM User1
+	WHERE UserType IN ('E', 'B');
+
+
+--Which users are customers? Use IN
+--Include User first name, last name, and user type
+
+SELECT FirstName, LastName, UserType	
+	FROM User1
+	WHERE UserType IN ('C', 'B');
+
+
+--What are all the security questions? 
+--Include question
+
+SELECT Question
+	FROM Question;
+
+
+--Which users have a null value for customer type? 
+--Include first name, last name, customer type, and user type
+
+SELECT FirstName, LastName, CustomerType, UserType	
+	FROM User1
+	WHERE CustomerType IS NULL;
+
+
+--What type of transactions have happened?  use GROUP BY
+--Include transaction type
+
+SELECT Type
+	FROM Transaction1
+	GROUP BY Type;
+
+
+--How many of transaction has happened?  use GROUP BY and COUNT
+--Include grade and count
+
+SELECT Type, COUNT(*)
+	FROM Transaction1
+	GROUP BY Type;
+
+
+--What are the answers to the security questions?
+--Include  question and answer, order by the question id 
+
+SELECT Question, Answer 
+	FROM SecurityQuestion JOIN Question
+	ON SecurityQuestion.QuestionId = Question.QuestionId
+	ORDER BY Question.QuestionId;
+
+
+--Who is the branch manager and what is the address of each branch?
+--Include the manager's first and last name, 
+--  and the branch's street address, city, nad state
+
+SELECT FirstName, LastName, StreetAddress, City, State
+	FROM User1 JOIN Branch
+	ON User1.UserId = Branch.Manager;
+
+
+--Which customers have made withdrawals larger than $10,000?
+--Include User first and last name
+
+SELECT FirstName, LastName
+	FROM User1 JOIN UserAccount
+	ON User1.UserId = UserAccount.UserId
+	JOIN Transaction1
+	ON UserAccount.AccountNumber = Transaction1.Account
+	WHERE Type = 'W'
+	AND Amount > 10000;
+
+
+--Which customers have made deposits larger than $10,000?
+--Include User first and last name
+
+SELECT FirstName, LastName
+	FROM User1 JOIN UserAccount
+	ON User1.UserId = UserAccount.UserId
+	JOIN Transaction1
+	ON UserAccount.AccountNumber = Transaction1.Account
+	WHERE Type = 'D'
+	AND Amount > 10000;
+
+
+--Which customers have made payment larger than $10,000?
+--Include User first and last name
+
+SELECT FirstName, LastName
+	FROM User1 JOIN UserAccount
+	ON User1.UserId = UserAccount.UserId
+	JOIN Transaction1
+	ON UserAccount.AccountNumber = Transaction1.Account
+	WHERE Type = 'P'
+	AND Amount > 10000;
+
+
+--Insert the following into the User1 table
+--  2 customers
+--  2 employees
+--  2 both
+
+INSERT INTO User1 VALUES ( 'C', 'Jim', 'Boberson', 'iajsodijod', 'boberson@aol.com', 'S');
+
+INSERT INTO User1 VALUES ( 'C', 'Might', 'Guy', 'hfgh', 'guy@aol.com', 'P');
+
+INSERT INTO User1 VALUES ( 'E', 'Fry', 'DontRember', 'asdasd', 'dontrember@aol.com', NULL);
+
+INSERT INTO User1 VALUES ( 'E', 'Lisa', 'Thomus', 'nvbnb', 'lthomus@yahoo.com', NULL);
+
+INSERT INTO User1 VALUES ( 'B', 'Guy', 'Dude', 'as2564', 'gdude@aol.com', 'P');
+
+INSERT INTO User1 VALUES ( 'B', 'Girl', 'Chick', 'sadsadsad1', 'gchick@gmail.com', 'P');
+
+
+--Which users have a customer type of null?
+-- Include User first name, last name, user type, and customer type
+
+SELECT FirstName, LastName, UserType, CustomerType
+	FROM User1
+	WHERE CustomerType IS NULL;
+
+
+--Which users have a customer type that is not null?
+-- Include User first name, last name, user type, and customer type
+
+SELECT FirstName, LastName, UserType, CustomerType
+	FROM User1
+	WHERE CustomerType IS NOT NULL;
+
+
+--Insert the following into the PhoneNumber table 
+--  1-2 Phone numbers per user you inserted, total of 9 phone number records
+
+INSERT INTO PhoneNumber VALUES ( '3256984521', '14' );
+
+INSERT INTO PhoneNumber VALUES ( '2645864789', '14' );
+
+INSERT INTO PhoneNumber VALUES ( '4562136598', '15' );
+
+INSERT INTO PhoneNumber VALUES ( '1235648526', '16' );
+
+INSERT INTO PhoneNumber VALUES ( '1459756423', '17' );
+
+INSERT INTO PhoneNumber VALUES ( '1987564321', '17' );
+
+INSERT INTO PhoneNumber VALUES ( '1115556663', '18' );
+
+INSERT INTO PhoneNumber VALUES ( '3335522141', '18' );
+
+INSERT INTO PhoneNumber VALUES ( '1111111111', '19' );
+
+
+--Insert the following into the Question table 
+--  2 questions
+
+INSERT INTO Question VALUES ( 'What color is the sky?' );
+
+INSERT INTO Question VALUES ( 'Say Peter?');
+
+
+--Insert the following into the SecurityQuestion table
+--  2 answers for each user you inserted, a total of 12 answers
+--  Can use questions already in database (but not question 7)
+--  and questions you added
+
+INSERT INTO SecurityQuestion VALUES ( '14', '9', 'Peter?' );
+
+INSERT INTO SecurityQuestion VALUES ( '14', '8', 'Blue' );
+
+INSERT INTO SecurityQuestion VALUES ( '15', '1', 'Napkin' );
+
+INSERT INTO SecurityQuestion VALUES ( '15', '5', 'Peachfuz' );
+
+INSERT INTO SecurityQuestion VALUES ( '16', '6', 'WalMart' );
+
+INSERT INTO SecurityQuestion VALUES ( '16', '3', 'School307' );
+
+INSERT INTO SecurityQuestion VALUES ( '17', '9', 'Peter?' );
+
+INSERT INTO SecurityQuestion VALUES ( '17', '8', 'Black at night' );
+
+INSERT INTO SecurityQuestion VALUES ( '18', '2', 'Aunt' );
+
+INSERT INTO SecurityQuestion VALUES ( '18', '1', 'Dog the 3rd' );
+
+INSERT INTO SecurityQuestion VALUES ( '19', '6', 'Target' );
+
+INSERT INTO SecurityQuestion VALUES ( '19', '1', 'Cat' );
+
+
+--Insert the following into the Branch table 
+--  1 branch, assign one of the employees you added as the manager
+
+INSERT INTO Branch VALUES ('16', 'Next to Walmart', 'Middle of Utah', 'UT');
+
+
+--Insert the following into the Account table 
+--  2 accounts per customer you inserted, total of 8 accounts 
+
+INSERT INTO Account VALUES ( 'C', '4',0.25, 0);  
+
+INSERT INTO Account VALUES ( 'S', '4',1.50, 0);
+
+INSERT INTO Account VALUES ( 'C', '4',0, 0);
+
+INSERT INTO Account VALUES ( 'S', '4',0, 0);
+
+INSERT INTO Account VALUES ( 'C', '4',0, 0);
+
+INSERT INTO Account VALUES ( 'S', '4',0, 0);
+
+INSERT INTO Account VALUES ( 'C', '4',0, 0);
+
+INSERT INTO Account VALUES ( 'S', '4',0, 0);
+
+
+--Insert the following into the UserAccount table 
+--  A record for each of the accounts you inserted
+--  Plus two records that use one of the accounts a second
+--    time with another customer 
+--  That is a total of 10 records
+
+INSERT INTO UserAccount VALUES ( '14', '1000000025');
+
+INSERT INTO UserAccount VALUES ( '14', '1000000026');
+
+INSERT INTO UserAccount VALUES ( '15', '1000000027');
+
+INSERT INTO UserAccount VALUES ( '15', '1000000028');
+
+INSERT INTO UserAccount VALUES ( '18', '1000000029');
+
+INSERT INTO UserAccount VALUES ( '18', '1000000030');
+
+INSERT INTO UserAccount VALUES ( '19', '1000000031');
+
+INSERT INTO UserAccount VALUES ( '19', '1000000032');
+
+INSERT INTO UserAccount VALUES ( '14', '1000000032');
+
+INSERT INTO UserAccount VALUES ( '15', '1000000031');
+
+
+--Write a SELECT statement to test to make sure that accounts related 
+--  to premium customers have $0 for the service fee
+--Include the account number for any account
+--  where the customer is a premium customer and the service fee is
+--  larger than $0  (if passes the test, will be empty)
+
+SELECT Account.AccountNumber, ServiceFee, User1.UserId
+	FROM Account JOIN UserAccount
+	ON Account.AccountNumber = UserAccount.AccountNumber
+	JOIN User1
+	ON UserAccount.UserId = User1.UserId
+	WHERE CustomerType = 'P'
+	AND ServiceFee > 0;
+
+
+--Write a SELECT statement to test to make sure users that are employees only 
+--  do not have an account
+--Include user id, first name, and last name, account number for each user 
+--  account where the user type is employee (if passes the test, will be empty)
+
+SELECT User1.UserId, FirstName, LastName AccountNumber
+	FROM User1 JOIN UserAccount
+	ON User1.UserId = UserAccount.UserId
+	WHERE UserType = 'E';
+ 
+
+--Insert the following into the Transaction table 
+--  3 withdrawals
+--  3 deposits
+--  3 payments, make sure these are on checking accounts only
+
+INSERT INTO Transaction1 VALUES ( 'W', '1000000003', 200.00, '2018-03-28 12:11:30' );
+  
+INSERT INTO Transaction1 VALUES ( 'W', '1000000004', 325.25, '2016-05-09 01:20:27' );
+
+INSERT INTO Transaction1 VALUES ( 'W', '1000000000', 1.50, '2014-12-08 10:13:22' );
+
+INSERT INTO Transaction1 VALUES ( 'D', '1000000011', 100.01, '2018-01-05 22:22:31' );
+
+INSERT INTO Transaction1 VALUES ( 'D', '1000000012', 57.65, '2018-04-19 09:33:11' );
+ 
+INSERT INTO Transaction1 VALUES ( 'D', '1000000021', 77.22, '2015-10-21 07:52:55' );
+
+INSERT INTO Transaction1 VALUES ( 'P', '1000000020', 1.00, '2016-11-15 11:01:56' );
+
+INSERT INTO Transaction1 VALUES ( 'P', '1000000023', 55.00, '2017-02-13 02:28:54' );
+
+INSERT INTO Transaction1 VALUES ( 'P', '1000000029', 125.25, '2015-01-26 08:27:44' );
+
+
+--Write a SELECT statement to test to make sure there are no payments on
+--  savings accounts
+--Include account number and transaction id where the account type is savings
+--  and the transactoin type is payment (if passes the test, will be empty)
+
+SELECT Account, TransactionId, AccountType
+	FROM Transaction1 JOIN Account
+	ON Transaction1.Account = Account.AccountNumber
+	WHERE Type = 'P'
+	AND  AccountType = 'S';
+
+
+-- Make the following updates
+
+--Change last name of user 8 to Bailey
+
+UPDATE User1
+	SET LastName = 'Bailey'
+	WHERE UserId = 8;
+
+
+--Change user 9. They got another job and will not longer be an employee.
+--Change their user type to customer only
+
+UPDATE User1
+	SET UserType = 'C'
+	WHERE UserId = 9;
+
+
+--Upgrade user 6 to premium. Then change the service fee to $0 for all their
+-- accounts
+--This will take two UPDATE statements. The first one will update the 
+--  customer type.
+--The second one will update the service fees
+--Do the second one by writing a SELECT statement that gets all the accounts 
+--  related to this customer. Then use that SELECT statement in the WHERE 
+--  clause to UPDATE the service fees to $0
+
+UPDATE User1
+	SET CustomerType = 'P'
+	WHERE UserId = 6;
+
+UPDATE Account
+	SET ServiceFee = 0
+	WHERE AccountNumber IN (	SELECT AccountNumber
+									FROM UserAccount
+									WHERE UserId = 6);
+
+
+
+--Do the following deletions 
+
+--Remove question 7. It has never been used.
+
+DELETE FROM Question
+	WHERE QuestionId = 7;

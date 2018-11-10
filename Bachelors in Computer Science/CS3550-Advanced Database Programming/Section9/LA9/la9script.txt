@@ -1,0 +1,100 @@
+--NOTE: You can test if Full-Text Search is installed if you want
+--  To do this copt the following line into Management Studio and execute it.
+--SELECT FULLTEXTSERVICEPROPERTY('IsFullTextInstalled')
+--The result will be either a 0 or a 1
+--  0 - not installed
+--  1 - installed
+
+USE AdventureWorks
+GO
+
+--Query 1
+--Which people do not have a phone number?
+--  List the first name and last name
+
+SELECT FirstName, LastName
+	FROM Person.Person
+	WHERE BusinessEntityID NOT IN	(SELECT BusinessEntityID
+						FROM Person.PersonPhone)
+
+
+--Query 2
+--How many people are there?
+--  List how many
+
+SELECT COUNT(*)
+	FROM Person.Person
+
+
+--Query 3
+--How many phone numbers are there?
+--  List how many
+
+SELECT COUNT(*)
+	FROM Person.PersonPhone
+
+
+--Query 4
+--Are the phone numbers unique? How many times is each phone number used?
+--  List how many for each phone number
+
+SELECT PhoneNumber, COUNT(*) AS count
+	FROM Person.PersonPhone
+	GROUP BY PhoneNumber
+
+--Query 5
+--Who was hired in the first quarter of 2008?
+--List the first name, last name, gender, and job title of all employees
+--  hired in the first quarter of 2008
+--Order them by hire date
+
+SELECT FirstName, LastName, Gender, JobTitle
+	FROM HumanResources.Employee e JOIN Person.Person p
+		ON e.BusinessEntityID = p.BusinessEntityID
+		WHERE YEAR(HireDate) = 2008
+			AND MONTH(HireDate) IN (1, 2, 3)
+		ORDER BY HireDate
+
+ 
+--Query 6
+--How many customers are in each territory?
+--  List the territory ID, Name, CountryRegionCode, Group 
+--  and how many customers in the territory
+--Order them in order by number of customers with the most at the top 
+
+SELECT st.TerritoryID, Name, CountryRegionCode, [Group], CustomerCount 
+	FROM (SELECT TerritoryID, COUNT(*) AS CustomerCount
+			FROM  Sales.Customer c
+			GROUP BY TerritoryID) AS tcc
+	JOIN Sales.SalesTerritory AS st ON st.TerritoryID = tcc.TerritoryID 
+	ORDER BY CustomerCount DESC
+
+--Query 7
+--Use PIVOT
+--How many employees are hired each month of each year?
+--  Set this up so the columns are months, 1-12 and rows are the year
+
+SELECT *
+	FROM	(SELECT MONTH(HireDate) AS month, YEAR(HireDate) AS year
+				FROM HumanResources.Employee) AS d
+	PIVOT (COUNT(month) FOR month IN ([1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12])) AS c 
+
+
+--Query 8
+--Use PIVOT
+--What is the average sales price for each category and for how many days 
+--  to manufacture?
+--List each product category name and the average sale price by days to 
+--  manufacture. The days to manufacture (0,1,2,3,4) are to be the headers 
+--  across the top and category names down the rows.
+--Sale price is the unit price * (1- unit price discount)
+
+SELECT *
+	FROM	(SELECT pc.Name, UnitPrice * ( 1 - UnitPriceDiscount) AS SalesPrice, DaysToManufacture
+				FROM Production.ProductCategory pc
+				JOIN Production.ProductSubcategory psc ON pc.ProductCategoryID = psc.ProductCategoryID
+				JOIN Production.Product p ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+				JOIN Sales.SalesOrderDetail sod ON sod.ProductID = p.ProductID) AS dm
+	PIVOT (AVG(SalesPrice) FOR DaysToManufacture IN ([0],[1],[2],[3],[4])) AS sp
+
+

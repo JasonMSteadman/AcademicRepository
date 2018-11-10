@@ -1,0 +1,79 @@
+
+//Write a mongo command for each of the following
+
+
+//1. Set the mongo shell to use the zipcodes database
+
+use zipcodes
+
+//2. List the document that has _id 84405. Make it pretty :)
+
+db.zips.find( { _id:"84405" } ).pretty()
+
+//3. List all the documents with OGDEN as the city. 
+//   Make it pretty :)
+
+db.zips.find( { city:"OGDEN" } ).pretty()
+
+//4. How many documents have the city OGDEN? 
+
+db.zips.find( { city:"OGDEN" } ).count()
+
+//5. How many documents have the city OGDEN and the state UT. 
+//   When using two filters, separate them with a comma.
+
+db.zips.find( { city:"OGDEN", state:"UT" } ).count()
+
+//6. List all the documents with the city OGDEN and the state UT. 
+//   Include only _id, city, and state.  
+
+db.zips.find( { city:"OGDEN", state:"UT" },
+	{ _id:1, city:1, state:1 } )
+
+//7. List all the documents with the city OGDEN and the state UT. 
+//   Have the output exclude _id, city, and state.  
+
+db.zips.find( { city:"OGDEN", state:"UT" },
+	{ _id:0, city:0, state:0 } )
+
+//8. How many zips have a latitude less than 20?
+//   The value for latitude is always the second element
+//   in the loc array. This element has an index of 1.
+//   To filter for a specific element in an array, add the
+//   index as part of the name and include quotes like this
+//     "loc.1"
+
+db.zips.find( { "loc.1": { $lt: 20 } } ).count()
+
+//9. Update a document, set pop to 5287 for downtown Detroit
+//   which has a zip code of 48226. 
+//   tited Dv.
+
+db.zips.update( { _id: "48226"}, { $set: { pop:5287 } } )
+
+//10. Write a findOne command using the zip code to display 
+//    the updated document for downtown Detroit
+
+db.zips.findOne( { _id: "48226" } )
+
+//11. It turns out the zip code for WSU is not in the collection. 
+//    Use insertOne to add a document with all the standard 
+//    fields and an additional one for campus. Set the values
+//    of the fields to the actual values for 84408. It is in
+//    Ogden, UT with a population of 0, a longitude of -111.9484,
+//    a latitude of 41.1952, and set campus to WSU. Use all 
+//    caps for the city and state values.
+
+db.zips.insertOne( {
+	_id: "84408" ,
+	city: "OGDEN" ,
+	loc: [-111.9484, 41.1952],
+	pop: 0,
+	state: "UT",
+	campus: "WSU"
+} )
+
+//12. Write a findOne command using the _id field that displays 
+//    the newly added document
+
+db.zips.findOne( { _id:"84408" } )

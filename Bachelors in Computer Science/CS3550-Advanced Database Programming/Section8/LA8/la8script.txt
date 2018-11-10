@@ -1,0 +1,187 @@
+
+--****************Get Available Movie Item Id Function**********************
+
+--Set Management Studio to use the PurpleBox database 
+
+USE PurpleBox
+GO
+
+--DROP the following function if it exists
+
+DROP FUNCTION IF EXISTS GetAvailableMovieId
+GO
+
+--Create a User-Defined Function that returns one id of a movie item (an INT)
+--  that is currently available for rent
+--Parameters: movie id, movie type
+--Returns: movie item id or -1 if none available
+--Note: Must be movie item that is the movie and type specified and
+--  is not in rental with return date set to NULL.
+
+CREATE FUNCTION GetAvailableMovieId (
+	@MovieId INT, @MovieType CHAR)
+	RETURNS INT
+
+	AS
+	BEGIN 
+		DECLARE @AvailableItem INT
+		SET @AvailableItem = (	SELECT TOP 1 MovieItemId FROM MovieItem
+								WHERE MovieId = @MovieId AND Type = @MovieType
+								AND MovieItemId NOT IN (	SELECT MovieItemId FROM Rental
+															WHERE ReturnDate IS NULL))
+		IF @AvailableItem IS NULL
+			RETURN -1
+
+		RETURN @AvailableItem
+	END
+
+
+--Add GO at the end of the function
+GO
+
+--Execute the following statements to test the previous function
+
+--Set database
+USE PurpleBox;
+GO
+
+--returns movie item id
+PRINT 'Movie item is: ' + CAST( dbo.GetAvailableMovieId(3, 'B') AS VARCHAR )
+
+
+--returns movie item id
+PRINT 'Movie item is: ' + CAST( dbo.GetAvailableMovieId(3, 'D') AS VARCHAR )
+
+
+--returns -1
+PRINT 'Movie item is: ' + CAST( dbo.GetAvailableMovieId(103, 'B') AS VARCHAR )
+
+
+--returns -1
+PRINT 'Movie item is: ' + CAST( dbo.GetAvailableMovieId(5, 'D') AS VARCHAR )
+
+
+
+--***************Add a Rental Procedure**************************
+--Set Management Studio to use the PurpleBox database 
+
+USE PurpleBox
+GO
+
+--DROP the following procedure if it exists
+
+DROP PROCEDURE IF EXISTS RentMovie
+GO
+
+--Create a Procedure to rent a movie
+--Parameters: customer id, movie id, movie type
+--When everything works and rental is added, return a 1 for success
+--When any issue arises, return a 0 for failure  
+--Test that customer has not reached rental limit
+--   If already reached limit, print specific error and end procedure
+--Test that customer is not banned
+--   If banned, print specific error and end procedure with 
+--Get the id of a movie item of the specified movie and type by calling
+--  the user-defined function written previously
+--  If non are available, print specific error and end procedure
+--Add one rental record
+
+
+--USE a TRY CATCH block to handle when the INSERT doesn't work.
+--If the INSERT works, print a message about rental added successfully
+--If it doesn't work, print error message about rental record not added
+
+CREATE PROCEDURE RentMovie (
+	@Customer INT, @Movie INT, @Type CHAR)
+
+AS
+	--Test if cumstomer has reached their rental limit
+	DECLARE @HowMany INT,
+			@CustomerType CHAR,
+			@IsBanned BIT,
+			@MovieItem INT
+
+	SELECT CustomerId FROM Rental
+		WHERE CustomerId = @Customer AND ReturnDate IS NULL
+
+	SET @HowMany = (SELECT @@ROWCOUNT)
+
+	SET @CustomerType = (	SELECT CustomerType FROM User1
+								WHERE UserId = @Customer)	
+
+	IF @CustomerType = 'S' AND @HowMany >= 2
+		BEGIN
+			PRINT 'Standard customer has already reached rental limit.'
+			RETURN 0
+		END
+
+	IF @CustomerType = 'P' AND @HowMany >= 4
+		BEGIN
+			PRINT	'Premium customer has already reached rental limit.'
+			RETURN 0
+		END
+
+	--Check that customer is not banned
+	SET @IsBanned = (	SELECT IsBanned FROM User1
+							WHERE UserId = @Customer)
+	
+	IF @IsBanned = 1
+	BEGIN
+		PRINT 'This customer is banned.'
+		RETURN 0
+	END
+
+	SET @MovieItem = dbo.GetAvailableMovieId( @Movie, @Type )
+
+	IF @MovieItem = -1
+	BEGIN
+		PRINT 'Movie is not available.'
+		RETURN 0
+	END
+
+	--Add one rental record
+	BEGIN TRY
+			INSERT INTO Rental VALUES ( @Customer, @MovieItem, GETDATE(), NULL )
+			PRINT 'The rental was successful.'
+			RETURN 1
+	END TRY
+	BEGIN CATCH
+		PRINT 'Error ocurred, rental was not added.'
+		RETURN 0
+	END CATCH
+
+--Add GO at the end of the procedure
+GO
+
+
+--Set Management Studio to use the PurpleBox database. 
+
+USE PurpleBox;
+GO
+
+--Works
+EXECUTE RentMovie 2, 3, 'B'
+
+--Standard customer reached rental limit
+EXECUTE RentMovie 4, 4, 'B'
+
+--Works 
+EXECUTE RentMovie 9, 2, 'B'
+
+--Premium customer reached rental limit
+EXECUTE RentMovie 7, 7, 'B'
+
+--Works
+EXECUTE RentMovie 3, 7, 'B'
+
+--Customer is banned
+EXECUTE RentMovie 11, 4, 'B'
+
+--Movie not available
+EXECUTE RentMovie 14, 5, 'D'
+
+--Works
+EXECUTE RentMovie 15, 5, 'B'
+
+
+

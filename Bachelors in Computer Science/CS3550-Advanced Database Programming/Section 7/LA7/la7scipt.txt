@@ -1,0 +1,303 @@
+
+--****************Test Data*********************************
+
+--Set Management Studio to use the StudentUTest database. This is the 
+--  database after the previous LA solutions were run.
+
+USE StudentUTest
+GO
+
+--Write a query to find any user ids that do not start with SU and  
+-- If all went well, this will be an empty result.
+-- Include user id, first name, last name
+--You can use some built in functions for this
+--  SUBSTRING ( expression ,start , length )  
+--  ISNUMERIC ( expression )
+--  LEN ( string_expression )  
+
+SELECT UserId, FirstName, LastName
+	FROM User1
+	WHERE SUBSTRING(UserId, 1, 2) <> 'SU'
+		OR LEN(SUBSTRING(UserId, 3, 7)) <> 7
+		OR ISNUMERIC(SUBSTRING(UserId, 3, 7)) = 0
+	
+
+
+--Write a query to find any administrator only users that have a 
+--  department or major. If all went well, this will be an empty result.
+-- Include user id, first name, last name, user type, department, and major
+
+
+SELECT UserId, FirstName, LastName, UserType, Department, Major
+	FROM User1
+	WHERE UserType = 'A'
+		AND (Department IS NOT NULL OR Major IS NOT NULL);
+
+
+--Notice how Adam, Mary and Jan appear to have NULL for both Department and 
+--  Major yet they are showing up on this list
+--  Look close to see that these NULL values do not have a yellow background
+--  These are the string 'NULL' instead of the key value NULL
+
+--Run update queries to replace any 'NULL' values with NULL
+--  Run a query for each value in the database that can have a NULL value
+
+UPDATE User1
+	SET Department = NULL
+	WHERE Department = 'NULL'
+
+UPDATE User1
+	SET Major = NULL
+	WHERE Major = 'NULL'
+
+UPDATE Section	
+	SET Instructor = NULL
+	WHERE Instructor = 'NULL'
+GO
+
+--Run the query again that finds any administrator only users that have a 
+--  department or major. 
+
+
+SELECT UserId, FirstName, LastName, UserType, Department, Major
+	FROM User1
+	WHERE UserType = 'A'
+		AND (Department IS NOT NULL OR Major IS NOT NULL);
+
+
+--Write a query to find any instructors that do not have a department
+--  If all went well, this will be an empty result
+-- Include user id, first name, last name, user type, department, and major
+
+SELECT	UserId, FirstName, LastName, UserType, Department, Major
+	FROM User1
+	WHERE UserType LIKE ('%I%')
+	AND Department IS NULL
+
+
+--Write a query to find any non-instructors that have a department
+--  If all went well, this will be an empty result
+-- Include user id, first name, last name, user type, department, and major
+
+SELECT	UserId, FirstName, LastName, UserType, Department, Major
+	FROM User1
+	WHERE UserType NOT LIKE ('%I%')
+	AND Department IS NOT NULL
+
+
+--Write a query to find any students that do not have a major
+--  If all went well, this will be an empty result
+-- Include user id, first name, last name, user type, department, and major
+
+SELECT	UserId, FirstName, LastName, UserType, Department, Major
+	FROM User1
+	WHERE UserType LIKE ('%S%')
+		AND Major IS NULL
+
+
+--Write a query to find any non-students that have a major
+--  If all went well, this will be an empty result
+-- Include user id, first name, last name, user type, department, and major
+
+SELECT	UserId, FirstName, LastName, UserType, Department, Major
+	FROM User1
+	WHERE UserType NOT LIKE ('%S%')
+		AND Major IS NOT NULL
+
+
+--Write a query to check that all users have at least one phone number
+--  Use a subquery that gets all the user ids from the phone number table
+--  Then use this subquery in the WHERE clause to identify if any are 
+--  NOT IN the result
+-- Include user id, first name, last name, and user type
+
+SELECT UserId, FirstName, LastName, UserType
+	FROM User1
+	WHERE UserId NOT IN	(SELECT DISTINCT UserId
+							FROM PhoneNumber)
+
+
+--****************Add User*********************************
+
+--Set Management Studio to use the StudentU3 database. This is a corrected
+--  version of the StudentUTest database.
+
+USE StudentU3
+GO
+
+
+--DROP the following procedure if it exists
+
+
+DROP PROCEDURE IF EXISTS AddUser
+
+
+--Create a Procedure to insert a new User
+--Parameters include: user id, first name, last name, password, user type, 
+--  department, major, phone number
+--Test that user id is not already in the data
+--   If already used, print specific error and end procedure
+--Test that user id follows the pattern specified in the scenario
+--   If doesn't match pattern, print specific error and end procedure
+--Test that user type and department are an allowed combination
+--   If not valid, print specific error and end procedure
+--Test that user type and major are an allowed combination
+--   If not valid, print specific error and end procedure
+--Add one complete user entry
+--Add one phone number record
+
+--USE a TRY CATCH block with BEGIN TRANSACTION, COMMIT TRANSACTION, and
+--ROLLBACK to make sure none of the INSERTs happen unless they all work.
+--If they work, print a message about user added successfully
+--If they don't work, print error message about user was not added
+
+
+USE StudentU3
+GO
+
+DROP PROCEDURE IF EXISTS AddUser
+GO
+
+CREATE PROCEDURE AddUser (
+	@UserId CHAR(9),
+	@FirstName NVARCHAR(35),
+	@LastName NVARCHAR(35),
+	@Password NVARCHAR(128),
+	@UserType VARCHAR(3),
+	@Department VARCHAR(8),
+	@Major VARCHAR(24),
+	@PhnoeNumber CHAR(10) )
+
+	AS
+
+		IF @UserId IN	(SELECT UserId
+							FROM User1)
+		BEGIN
+			PRINT 'Error! User ID already used'
+			RETURN
+		END
+
+		IF SUBSTRING(@UserId, 1, 2) <> 'SU'
+			OR LEN(SUBSTRING(@UserId, 3, 7)) <> 7
+			OR ISNUMERIC(SUBSTRING(@UserId, 3, 7)) = 0
+		BEGIN
+			PRINT 'Error! User Id does not follow specified pattern'
+			RETURN
+		END
+
+		IF @UserType LIKE ('%I%') AND @Department IS NULL
+		BEGIN
+			PRINT 'Error! Instructor must have a department'
+			RETURN
+		END
+
+		IF @UserType NOT LIKE ('%I%') AND @Department IS  NOT NULL
+		BEGIN
+			PRINT 'Error! User must be an Instructor to have a department'
+			RETURN
+		END
+
+		IF @UserType LIKE ('%S%') AND @Major IS NULL
+		BEGIN
+			PRINT 'Error! Student must have a major'
+			RETURN
+		END
+
+		IF @UserType NOT LIKE ('%S%') AND @Major IS  NOT NULL
+		BEGIN
+			PRINT 'Error! User must be a Student to have a major'
+			RETURN
+		END
+
+		BEGIN TRY
+			BEGIN TRANSACTION
+				INSERT INTO User1 VALUES (
+					@UserId,
+					@FirstName,
+					@LastName,
+					@Password,
+					@UserType,
+					@Department,
+					@Major );
+
+				INSERT INTO PhoneNumber VALUES (
+				@PhnoeNumber,
+				@UserId )
+			COMMIT TRANSACTION
+			PRINT 'New User Added ' + @UserId;
+		END TRY
+		BEGIN CATCH
+			ROLLBACK
+			PRINT 'Error occurred! User was not added to the database.'
+		END CATCH
+
+
+
+--Execute the following statements to test the previous procedure
+--Some will produce errors and three will result in additions to 
+--  the User1 table
+
+--Set database
+USE StudentU3;
+GO
+
+--Works
+EXECUTE AddUser 
+  'SU3452944', 'Harold', 'Wilkinson', '34ayJIo8**',  'I', 'Chem', NULL, '4329846254'
+
+--Incorrect User ID pattern
+EXECUTE AddUser 
+  'S26489784', 'Jan', 'Winters', 'fk*lsdfml$',  'IS', 'Chem', 'Business', '3298462543'
+
+--Incorrect User ID pattern
+EXECUTE AddUser 
+  'SU264897', 'Bill', 'Nelson', '16UNnfe&',  'AI', 'Chem', NULL, '9846254659'
+
+--Incorrect User ID pattern
+EXECUTE AddUser 
+  'SUTR89784', 'Henry', 'Masters', '34ayJIo8**',  'I', 'Chem', NULL, '4321566436'
+
+--Works 
+EXECUTE AddUser 
+  'SU3452917', 'Mary', 'Strong', '16UNnfe&',  'I', 'Biology', NULL, '8013549746'
+
+--User ID already in data
+EXECUTE AddUser 
+  'SU3452917', 'John', 'Bird', 'ke*fke32',  'S', NULL, 'Biology', '8013546497'
+
+--Instructor without a department
+EXECUTE AddUser 
+  'SU3654986', 'John', 'Bird', 'ke*fke32',  'I', NULL, NULL, '8013546497'
+
+--Non-Instructor with a department
+EXECUTE AddUser 
+  'SU2647897', 'Bill', 'Nelson', '16UNnfe&',  'AS', 'Chem', 'MATH', '9846254659'
+
+--Student without a major
+EXECUTE AddUser 
+  'SU8989784', 'Henry', 'Masters', '34ayJIo8**',  'AS', NULL, NULL, '4321566436' 
+ 
+ --Non-Student with a major
+EXECUTE AddUser 
+  'SU3458947', 'John', 'Bird', 'ke*fke32',  'I',  'Chem', 'MATH', '8013546497'
+
+
+ --Works
+EXECUTE AddUser 
+  'SU9889784', 'Henry', 'Masters', '34ayJIo8**',  'AS', NULL, 'Biology', '4321566436' 
+
+
+ --Other Error, not checked by Procedure but checked by DBMS
+ -- User not added because AI is not an allowed user type
+EXECUTE AddUser 
+  'SU2674897', 'Bill', 'Nelson', '16UNnfe&',  'AI', 'Chem', NULL, '9846254659'
+ 
+
+
+--Call the procedure to add two more users with no errors
+
+EXECUTE AddUser 
+  'SU0010003', 'Harold', 'Wilkinson', '34ayJIo8**',  'S', NULL , 'MATH' , '4329846254'
+
+EXECUTE AddUser 
+  'SU0010004', 'Harold', 'Wilkinson', '34ayJIo8**',  'IS', 'Art' , 'CS' , '4329846254'

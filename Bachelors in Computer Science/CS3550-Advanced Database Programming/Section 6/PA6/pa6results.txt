@@ -1,0 +1,492 @@
+
+--Set Management Studio to use the WellMoney2 database
+
+Commands completed successfully.
+
+--List all the users in the database
+--Include User first and last name
+
+FirstName                           LastName
+----------------------------------- -----------------------------------
+William                             Johnson
+Tim                                 Scott
+Launa                               Williams
+Manuel                              Sanchez
+George                              Humpreys
+Tim                                 Hansen
+Riley                               Jones
+Carol                               Strong
+Lilly                               Smith
+John                                Walters
+John                                Jones
+Tracy                               Jones
+Tim                                 Reed
+
+(13 rows affected)
+
+--Which users have the first name Tim?
+--Include User first and last name
+
+FirstName                           LastName
+----------------------------------- -----------------------------------
+Tim                                 Scott
+Tim                                 Hansen
+Tim                                 Reed
+
+(3 rows affected)
+
+--Which users are employees? Use IN
+--Include User first name, last name, and user type
+
+FirstName                           LastName                            UserType
+----------------------------------- ----------------------------------- --------
+William                             Johnson                             E
+Launa                               Williams                            B
+Manuel                              Sanchez                             B
+Carol                               Strong                              E
+Lilly                               Smith                               B
+
+(5 rows affected)
+
+--Which users are customers? Use IN
+--Include User first name, last name, and user type
+
+
+FirstName                           LastName                            UserType
+----------------------------------- ----------------------------------- --------
+Tim                                 Scott                               C
+Launa                               Williams                            B
+Manuel                              Sanchez                             B
+George                              Humpreys                            C
+Tim                                 Hansen                              C
+Riley                               Jones                               C
+Lilly                               Smith                               B
+John                                Walters                             C
+John                                Jones                               C
+Tracy                               Jones                               C
+Tim                                 Reed                                C
+
+(11 rows affected)
+
+--What are all the security questions? 
+--Include question
+
+Question
+--------------------------------------------------------------------------------------------------------------------------------
+What is the name of your first pet?
+What is the name of your mother-in-laws aunt?
+What is the name of the elementary school you attended in 3rd grade?
+Who was president when you were born?
+What is the nickname of your best friend?
+Where do you want to go on vacation?
+What color is your rainbow?
+
+(7 rows affected)
+
+--Which users have a null value for customer type? 
+--Include first name, last name, customer type, and user type
+
+
+FirstName                           LastName                            CustomerType UserType
+----------------------------------- ----------------------------------- ------------ --------
+William                             Johnson                             NULL         E
+Carol                               Strong                              NULL         E
+
+(2 rows affected)
+
+--What type of transactions have happened?  use GROUP BY
+--Include transaction type
+
+Type
+----
+D
+P
+W
+
+(3 rows affected)
+
+--How many of each type of transaction has happened?  use GROUP BY and COUNT
+--Include transaction type and count
+
+Type 
+---- -----------
+D    23
+P    19
+W    16
+
+(3 rows affected
+
+--What are the answers to the security questions?
+--Include  question and answer, order by the question id 
+
+Question                                                                                                                         Answer
+-------------------------------------------------------------------------------------------------------------------------------- ----------------------------------------------------------------
+What is the name of your first pet?                                                                                              tom
+What is the name of your first pet?                                                                                              Garfield
+What is the name of your first pet?                                                                                              Apollo
+What is the name of your first pet?                                                                                              wally
+What is the name of your first pet?                                                                                              buster
+What is the name of your first pet?                                                                                              fido
+What is the name of your mother-in-laws aunt?                                                                                    Julie
+What is the name of your mother-in-laws aunt?                                                                                    Heather
+What is the name of your mother-in-laws aunt?                                                                                    Beth
+What is the name of your mother-in-laws aunt?                                                                                    Sally
+What is the name of the elementary school you attended in 3rd grade?                                                             Lincoln
+What is the name of the elementary school you attended in 3rd grade?                                                             Westside
+What is the name of the elementary school you attended in 3rd grade?                                                             South Bend
+What is the name of the elementary school you attended in 3rd grade?                                                             Nibley
+Who was president when you were born?                                                                                            Reagan
+Who was president when you were born?                                                                                            Washington
+Who was president when you were born?                                                                                            Carter
+Who was president when you were born?                                                                                            Clinton
+What is the nickname of your best friend?                                                                                        Buddy
+What is the nickname of your best friend?                                                                                        Bitsy
+Where do you want to go on vacation?                                                                                             Florida
+Where do you want to go on vacation?                                                                                             Spain
+Where do you want to go on vacation?                                                                                             St George
+Where do you want to go on vacation?                                                                                             Redwoods
+Where do you want to go on vacation?                                                                                             Georgia
+Where do you want to go on vacation?                                                                                             Florida
+
+(26 rows affected)
+
+--Who is the branch manager and what is the address of each branch?
+--Include the manager's first and last name, 
+--  and the branch's street address, city, nad state
+
+FirstName                           LastName                            StreetAddress                                                                                                                    City                                                             State
+----------------------------------- ----------------------------------- -------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------------------------------- -----
+William                             Johnson                             32 Lilac Way                                                                                                                     Ogden                                                            UT
+Launa                               Williams                            56893 Central Drive                                                                                                              Mt. Wilderness                                                   ID
+Manuel                              Sanchez                             5418 Walters Dr.                                                                                                                 West Bend                                                        WY
+
+(3 rows affected)
+
+--Which customers have made withdrawals larger than $10,000?
+--Include User first and last name
+
+FirstName                           LastName
+----------------------------------- -----------------------------------
+Tracy                               Jones
+
+(1 row affected)
+
+--Which customers have made deposits larger than $10,000?
+--Include User first and last name
+
+FirstName                           LastName
+----------------------------------- -----------------------------------
+George                              Humpreys
+Riley                               Jones
+Tracy                               Jones
+Tim                                 Reed
+
+(4 rows affected)
+
+--Which customers have made payments larger than $10,000?
+--Include User first and last name
+
+FirstName                           LastName
+----------------------------------- -----------------------------------
+Tim                                 Hansen
+
+(1 row affected)
+
+
+--Insert the following into the User1 table
+--  2 customers
+--  2 employees
+--  2 both
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+--Which users have a customer type of null?
+-- Include User first name, last name, user type, and customer type
+--Your values will be different because the values you inserted are
+--  different, the number of records will be the same
+
+FirstName                           LastName                            UserType CustomerType
+----------------------------------- ----------------------------------- -------- ------------
+William                             Johnson                             E        NULL
+Carol                               Strong                              E        NULL
+Jan                                 Waters                              E        NULL
+Debbie                              Haslam                              E        NULL
+
+(4 rows affected)
+
+--Which users have a customer type that is not null?
+-- Include User first name, last name, user type, and customer type
+--Your values will be different because the values you inserted are
+--  different, the number of records will be the same
+
+FirstName                           LastName                            UserType CustomerType
+----------------------------------- ----------------------------------- -------- ------------
+Tim                                 Scott                               C        S
+Launa                               Williams                            B        P
+Manuel                              Sanchez                             B        S
+George                              Humpreys                            C        S
+Tim                                 Hansen                              C        S
+Riley                               Jones                               C        P
+Lilly                               Smith                               B        S
+John                                Walters                             C        P
+John                                Jones                               C        P
+Tracy                               Jones                               C        S
+Tim                                 Reed                                C        S
+Tracy                               Dickson                             C        S
+Matt                                Hiker                               B        P
+Fran                                Dikes                               B        S
+Mary                                Christensen                         C        S
+
+(15 rows affected)
+
+--Insert the following into the PhoneNumber table 
+--  1-2 Phone numbers per user you inserted, total of 9 phone number records
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+--Insert the following into the Question table 
+--  2 questions
+
+(1 row affected)
+
+(1 row affected)
+
+--Insert the following into the SecurityQuestion table
+--  2 answers for each user you inserted, a total of 12 answers
+--  Can use questions already in database (but not question 7)
+--  and questions you added
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+--Insert the following into the Branch table 
+--  1 branch, assign one of the employees you added as the manager
+
+(1 row affected)
+
+--Insert the following into the Account table 
+--  2 accounts per customer you inserted, total of 8 accounts 
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+--Insert the following into the UserAccount table 
+--  A record for each of the accounts you inserted
+--  Plus two records that use one of the accounts a second
+--    time with another customer 
+--  That is a total of 10 records
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+
+--Write a SELECT statement to test to make sure that accounts related 
+--  to premium customers have $0 for the service fee
+--Include the account number, service fee, and user id for any account
+--  where the customer is a premium customer and the service fee is
+--  larger than $0  (if passes the test, will be empty)
+
+AccountNumber ServiceFee            UserId
+------------- --------------------- -----------
+
+(0 rows affected)
+
+
+--Change the condition to = 0 and see if you get a list of all the premium
+--  customer accounts 
+--Include the account number, service fee, and user id for any account
+--  where the customer is a standard customer and the service fee is $0
+--Your values will be different because the values you inserted are
+--  different, the number of records will be the same
+
+
+AccountNumber ServiceFee            UserId
+------------- --------------------- -----------
+1000000006    0.00                  3
+1000000017    0.00                  3
+1000000023    0.00                  3
+1000000014    0.00                  7
+1000000002    0.00                  11
+1000000008    0.00                  11
+1000000022    0.00                  11
+1000000027    0.00                  16
+1000000031    0.00                  16
+
+(9 rows affected)
+
+--Write a SELECT statement to test to make sure users that are employees only 
+--  do not have an account
+--Include user id, first name, and last name, account number for each user 
+--  account where the user type is employee (if passes the test, will be empty)
+
+UserId      FirstName                           LastName                            AccountNumber
+----------- ----------------------------------- ----------------------------------- -------------
+
+(0 rows affected) 
+
+--Insert the following into the Transaction table 
+--  3 withdrawals
+--  3 deposits
+--  3 payments, make sure these are on checking accounts only
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+(1 row affected)
+
+--Write a SELECT statement to test to make sure there are no payments on
+--  savings accounts
+--Include account number and transaction id where the account type is savings
+--  and the transaction type is payment (if passes the test, will be empty)
+
+AccountNumber TransactionId
+------------- --------------------
+
+(0 rows affected)
+
+--Change the condition to test account type is checking, use DISTINCT 
+--  so you only get each account once and ORDER BY transaction id
+--Include account number and transaction id where the account type is savings
+--  and the transactoin type is payment (if passes the test, this will produce
+--  a list of all the payment transactions)
+--Your values will be different because the values you inserted are
+--  different, the number of records will be the same
+
+AccountNumber TransactionId
+------------- --------------------
+1000000001    5
+1000000002    8
+1000000002    9
+1000000006    16
+1000000007    17
+1000000008    22
+1000000008    24
+1000000009    26
+1000000011    29
+1000000014    33
+1000000014    34
+1000000015    36
+1000000015    41
+1000000017    43
+1000000018    44
+1000000020    49
+1000000023    51
+1000000018    52
+1000000000    57
+1000000000    65
+1000000023    66
+1000000018    67
+
+(22 rows affected)
+
+-- Make the following updates
+
+--Change last name of user 8 to Bailey
+
+(1 row affected)
+
+--Change user 9. They got another job and will not longer be an employee.
+--Change their user type to customer only
+
+(1 row affected)
+
+--Upgrade user 6 to premium. Then change the service fee to $0 for all their
+-- accounts
+--This will take two UPDATE statements. The first one will update the 
+--  customer type.
+--The second one will update the service fees
+--Do the second one by writing a SELECT statement that gets all the accounts 
+--  related to this customer. Then use that SELECT statement in the WHERE 
+--  clause to UPDATE the service fees to $0
+
+(1 row affected)
+
+(3 rows affected)
+
+--Do the following deletions 
+
+--Remove question 7. It has never been used.
+
+(1 row affected)

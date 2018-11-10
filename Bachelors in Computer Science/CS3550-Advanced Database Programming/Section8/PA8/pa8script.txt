@@ -1,0 +1,152 @@
+
+--*********************Compute Overdue Fee Function***************************
+--Set Management Studio to use the PurpleBox database. 
+
+USE PurpleBox;
+GO
+
+--DROP the following function if it exists
+
+
+
+--Create a function to compute overdue fee. Rentals are allowed for three
+--  days. For each day late there is a $1.09 overdue fee charged
+--  Parameters: RentalDate, ReturnDate
+-- Return: overdue fee or 0 if not late
+
+USE PurpleBox
+GO
+
+DROP FUNCTION IF EXISTS ComputeOverdue
+GO
+
+CREATE FUNCTION ComputeOverdue ( @RentalDate DATE, @ReturnDate DATE)
+	RETURNS SMALLMONEY
+
+AS
+BEGIN
+
+	DECLARE @Days INT
+
+	SET @Days = DATEDIFF ( day, @RentalDate, @ReturnDate)
+
+	IF @Days <= 3
+		RETURN 0
+
+	RETURN (@Days - 3) * 1.09
+END
+
+
+--Add GO at the end of the function
+GO
+
+
+--Execute the following statements to test the previous function
+
+--Set Management Studio to use the PurpleBox database. 
+USE PurpleBox;
+GO
+
+--returns 1.09
+PRINT dbo.ComputeOverdue( '2018-07-4', '2018-07-8')
+
+--returns 0
+PRINT dbo.ComputeOverdue( '2018-06-29', '2018-07-2')
+
+
+--returns 3.27
+PRINT dbo.ComputeOverdue( '2018-06-29', '2018-07-5')
+
+
+--***********Return a Movie Trigger - Overdue Check***************************
+
+--Set Management Studio to use the PurpleBox database. 
+
+USE PurpleBox;
+GO
+
+--DROP the following trigger if it exists
+
+
+
+--Create a trigger for the Rental table. The trigger is to be executed when 
+--  the return date of a rental is updated
+--The trigger is to call the previous function for the overdue fee and when
+--  there is an overdue fee, add an overdue fee record
+
+--USE a TRY CATCH block to handle when the INSERT doesn't work.
+--If the INSERT works, print a message about overdue fee added successfully
+--If it doesn't work, print error message about overdue fee record not added
+
+
+USE PurpleBox
+GO
+
+DROP TRIGGER IF EXISTS OverdueCheck
+GO
+
+
+CREATE TRIGGER OverdueCheck
+	ON Rental AFTER UPDATE
+
+AS
+
+	IF UPDATE ( ReturnDate )
+		BEGIN
+			DECLARE @Rented DATE,
+					@Return DATE,
+					@RentalId INT,
+					@Fee SMALLMONEY
+
+			SELECT @RentalId = RentalId, @Rented = RentalDate, 
+					@Return = ReturnDate FROM inserted
+
+			IF (@Return IS NULL)
+			BEGIN
+				PRINT 'Movie not returned yet.'
+				RETURN
+			END
+		
+			SET @Fee = dbo.ComputeOverdue ( @Rented, @Return )
+			PRINT 'The fee is ' + CAST(@Fee AS VARCHAR)
+
+			IF @Fee > 0
+				BEGIN
+					BEGIN TRY
+						INSERT INTO OverdueFee VALUES (@RentalId, @Fee, 0)
+						PRINT 'Overdue fee added sucessfully.'
+					END TRY
+					BEGIN CATCH
+						PRINT 'Error, overdue fee not added.'
+					END CATCH
+				END
+			ELSE
+				PRINT 'Movie return on time, no overdue fee added.'
+		END
+
+
+
+
+--Add GO at the end of the trigger
+GO
+
+
+--Execute the following statements to test the previous trigger
+
+--Set Management Studio to use the PurpleBox database. 
+USE PurpleBox;
+GO
+
+
+--Tests trigger when return date is NULL
+UPDATE Rental SET ReturnDate = NULL
+  WHERE RentalId = 12
+
+--Adds overdue fee
+UPDATE Rental SET ReturnDate = GETDATE()
+  WHERE RentalId = 12
+
+
+--No overdue fee added
+UPDATE Rental SET ReturnDate = '2018-07-05'
+  WHERE RentalId = 20

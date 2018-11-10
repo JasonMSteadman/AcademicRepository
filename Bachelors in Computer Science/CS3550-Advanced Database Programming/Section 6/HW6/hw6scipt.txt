@@ -1,0 +1,516 @@
+
+--Set Management Studio to use the PurpleBox2 database
+
+USE PurpleBox2;
+
+
+--List all the users in the database
+--Include User first name, last name, user type, and customer type
+
+SELECT FirstName, LastName, UserType, CustomerType
+	FROM User1;
+
+
+--Which users have the last name Smith?
+--Include User first and last name
+
+SELECT FirstName, LastName
+	FROM User1
+	WHERE LastName = 'Smith';
+
+
+--Which users are employees? Use IN
+--Include User first name, last name, and user type
+
+SELECT FirstName, LastName, UserType
+	FROM User1
+	WHERE UserType IN( 'E' );
+
+
+--Which users are customers? Use IN
+--Include User first name, last name, and user type
+
+SELECT FirstName, LastName, UserType
+	FROM User1
+	WHERE UserType IN( 'C' );
+
+
+--Which users have a null value for customer type? 
+--Include first name, last name, customer type, and user type
+
+SELECT FirstName, LastName, CustomerType, UserType
+	FROM User1
+	WHERE CustomerType IS NULL;
+
+
+--What movie ratings have been used in the data?  use GROUP BY
+--Include MpaaRating type
+
+SELECT MpaaRating
+	FROM Movie
+	GROUP BY MpaaRating;
+
+
+--How many times has each movie rating been used in the data?  use GROUP BY and COUNT
+--Include MpaaRating type and count
+
+SELECT MpaaRating, COUNT(*) 
+	FROM Movie
+	GROUP BY MpaaRating;
+
+
+--What are the answers to the security questions?
+--Include  question and answer, order by the question id 
+
+SELECT Question, Answer
+	FROM SecurityQuestion JOIN Question
+	ON SecurityQuestion.QuestionId = Question.QuestionId
+	ORDER BY Question.QuestionId;
+
+
+--Who directed each movie?
+--Include movie title, and director first and last name
+
+SELECT Title, FirstName, LastName
+	FROM Movie JOIN MovieDirector
+	ON Movie.MovieId = MovieDirector.MovieId
+	JOIN Director
+	ON MovieDirector.DirectorId = Director.DirectorId;
+
+
+--What movie(s) was each actor in?
+--Include Actor first and last name and movie title, but in in alphabetical
+--  order by the actor's last name
+
+SELECT FirstName, LastName, Title
+	FROM Movie JOIN MovieActor
+	ON Movie.MovieId = MovieActor.MovieId
+	JOIN Actor
+	ON MovieActor.ActorId = Actor.ActorId
+	ORDER BY LastName;
+
+
+--What movies currently have an active reservation? (active means it has
+--  not been filled yet)
+--Include movie title and type
+
+SELECT Title, Type
+	FROM Reservation JOIN Movie
+	ON Reservation.MovieId = Movie.MovieId
+	WHERE IsFilled = 0;
+
+
+--What movies are currently rented? (have not been returned)
+--Include movie title, movie item id, and rental date
+
+SELECT Title, MovieItem.MovieItemId, RentalDate
+	FROM Rental JOIN MovieItem
+	ON Rental.MovieItemId = MovieItem.MovieItemId
+	JOIN Movie 
+	ON MovieItem.MovieId = Movie.MovieId
+	WHERE ReturnDate IS NULL;
+
+
+--What movies has each customer rented? 
+--Include customer first and last name, movie title, and rental date
+
+SELECT FirstName, LastName, Title, RentalDate
+	FROM User1 JOIN Rental
+	ON User1.UserId = Rental.CustomerId
+	JOIN MovieItem
+	ON Rental.MovieItemId = MovieItem.MovieItemId
+	JOIN Movie
+	ON MovieItem.MovieId = Movie.MovieId;
+
+
+--Which customers have had overdue fees and what movie was it for?
+--Include customer first name and last name, Movie title, overdue fee, 
+--  and is paid
+
+SELECT FirstName, LastName, Title, OverdueFee, IsPaid
+	FROM User1 JOIN Rental
+	ON User1.UserId = Rental.CustomerId
+	JOIN OverdueFee
+	ON Rental.RentalId = OverdueFee.RentalId
+	JOIN MovieItem
+	ON Rental.MovieItemId = MovieItem.MovieItemId
+	JOIN Movie
+	ON MovieItem.MovieId = Movie.MovieId;
+
+
+--Insert the following into the User1 table
+--  2 customers
+--  2 employees
+--  2 both
+
+INSERT User1 VALUES ( 'Might', 'Guy', 'sdfsdfa', 'guy@gmail.com', 0, 'C', 'S' ); 
+
+INSERT User1 VALUES ( 'Meg', 'Griffin', 'asdgfg', 'megtheworld@aol.com', 0, 'C', 'S' );
+
+INSERT User1 VALUES ( 'Losie', 'Griffin', 'password', 'lgriffin@yahoo.com', 0, 'E', NULL );
+
+INSERT User1 VALUES ( 'Chris', 'Griffin', 'Dkjldfkjg', 'cgonfire@gmail.com', 0, 'E', NULL );
+
+INSERT User1 VALUES ( 'Frank', 'Castle', 'adsdhghgf', 'punisher@yahoo.com', 0, 'B', 'P' );
+
+INSERT User1 VALUES ( 'Homer', 'Simpson', 'sdghfvcb', 'mrx@aol.com', 0, 'B', 'P' );
+
+
+--Which users have a customer type of null?
+-- Include User first name, last name, user type, and customer type
+
+SELECT FirstName, LastName, UserType, CustomerType
+	FROM User1
+	WHERE CustomerType IS NULL;
+
+
+--Which users have a customer type that is not null?
+-- Include User first name, last name, user type, and customer type
+
+SELECT FirstName, LastName, UserType, CustomerType
+	FROM User1
+	WHERE CustomerType IS NOT NULL;
+
+
+--Insert the following into the PhoneNumber table 
+--  1-2 Phone numbers per user you inserted, total of 9 phone number records
+
+INSERT PhoneNumber VALUES ( '2659754623', 14 );
+
+INSERT PhoneNumber VALUES ( '1225354832', 14 );
+
+INSERT PhoneNumber VALUES ( '2642131200', 15 );
+
+INSERT PhoneNumber VALUES ( '4545132100', 15 );
+
+INSERT PhoneNumber VALUES ( '00.1311564', 16 );
+
+INSERT PhoneNumber VALUES ( '3212152000', 17 );
+
+INSERT PhoneNumber VALUES ( '1132145410', 17 );
+
+INSERT PhoneNumber VALUES ( '3121545120', 18 );
+
+INSERT PhoneNumber VALUES ( '4548512305', 19 );
+
+
+--Insert the following into the Question table 
+--  2 questions
+
+INSERT Question VALUES ( 'What is the moon?' );
+
+INSERT Question VALUES ( 'What is the meaning of life?' );
+
+
+--Insert the following into the SecurityQuestion table
+--  2 answers for each user you inserted, a total of 12 answers
+--  Can use questions already in database (but not question 3)
+--  and questions you added
+
+INSERT SecurityQuestion VALUES ( 14, 9, 'The power of youth!' );
+
+INSERT SecurityQuestion VALUES ( 14, 1, 'Tim' );
+
+INSERT SecurityQuestion VALUES ( 15, 8, 'A rock?' );
+
+INSERT SecurityQuestion VALUES ( 15, 1, 'Mr. Swanson' );
+
+INSERT SecurityQuestion VALUES ( 16, 6, 'Bonny' );
+
+INSERT SecurityQuestion VALUES ( 16, 7, 'Not here' );
+
+INSERT SecurityQuestion VALUES ( 17, 8, 'Cheese!' );
+
+INSERT SecurityQuestion VALUES ( 17, 9, 'Also cheese?' );
+
+INSERT SecurityQuestion VALUES ( 18, 1, 'Joe' );
+
+INSERT SecurityQuestion VALUES ( 18, 2, 'Tommy' );
+
+INSERT SecurityQuestion VALUES ( 19, 7, 'New York' );
+
+INSERT SecurityQuestion VALUES ( 19, 9, 'Is this a trick question?' );
+
+
+--Insert the following into the Movie table 
+--  4 movies
+
+INSERT Movie VALUES ( '28 Weeks Later', 'Six months after the original epidemic, 
+					the rage virus has all but annihilated the population of the 
+					British Isles. Nevertheless, the U.S. Army declares the danger 
+					past, and American soldiers arrive to restore order and begin 
+					reconstruction. Refugees return to British soil, but one of them 
+					carries a deadly secret: The virus is not gone and is even more 
+					dangerous than before.', 'R' );
+
+INSERT Movie VALUES ( 'Land of the Dead', 'In a world where zombies form the majority 
+					of the population, the remaining humans build a feudal society away 
+					from the undead. Ruthless Paul Kaufman (Dennis Hopper) rules and 
+					protects this microcosm but enforces painful class distinctions. 
+					Second-in-command Cholo DeMora (John Leguizamo) attempts to lead a 
+					secret rebellion against Kaufman''s tyranny, but when the zombies 
+					begin to evolve, the survivors must discover a way to protect themselves 
+					from a zombie hoard that can learn and adapt.', 'R' );
+
+INSERT Movie VALUES ( 'Zootopia', 'From the largest elephant to the smallest shrew, the city of 
+					Zootopia is a mammal metropolis where various animals live and thrive. 
+					When Judy Hopps (Ginnifer Goodwin) becomes the first rabbit to join the 
+					police force, she quickly learns how tough it is to enforce the law. 
+					Determined to prove herself, Judy jumps at the opportunity to solve a 
+					mysterious case. Unfortunately, that means working with Nick Wilde 
+					(Jason Bateman), a wily fox who makes her job even harder.', 'PG' );
+
+INSERT Movie VALUES ( 'The Secret Life of Pets', 'Max (Louis C.K.) is a spoiled terrier who 
+					enjoys a comfortable life in a New York building until his owner adopts 
+					Duke, a giant and unruly canine. During their walk outside, they 
+					encounter a group of ferocious alley cats and wind up in a truck that''s 
+					bound for the pound. Luckily, a rebellious bunny named Snowball swoops 
+					in to save the doggy duo from captivity. In exchange, Snowball demands 
+					that Max and Duke join his gang of abandoned pets on a mission against 
+					the humans who''ve done them wrong.', 'PG' );
+
+
+--Insert the following into the Director table 
+--  4 or more directors, at least one for each movie you entered, do
+--  not add directors already in the data  
+
+INSERT Director VALUES ( 'Chris', 'Renaud' );
+
+INSERT Director VALUES ( 'Yarrow', 'Cheney' );
+
+INSERT Director VALUES ( 'Byron', 'Howard' );
+
+INSERT Director VALUES ( 'Rich', 'Moore' );
+
+INSERT Director VALUES ( 'George', 'Romero' );
+
+INSERT Director VALUES ( 'Juan', 'Fresnadillo' );
+
+
+--Insert a MovieDirector record for each director entered (at least 4)
+
+INSERT MovieDirector VALUES ( 12, 9 );
+
+INSERT MovieDirector VALUES ( 12, 10 );
+
+INSERT MovieDirector VALUES ( 11, 11 );
+
+INSERT MovieDirector VALUES ( 11, 12 );
+
+INSERT MovieDirector VALUES ( 10, 13 );
+
+INSERT MovieDirector VALUES ( 9, 14 );
+
+
+--Insert the following into the Actor table 
+--  8 or more actors, at least two for each movie you entered, do
+--  not add actors already in the data
+
+INSERT Actor VALUES ( 'Kevin', 'Hart' );
+
+INSERT Actor VALUES ( 'Lade', 'Bell' );
+
+INSERT Actor VALUES ( 'Idris', 'Elba' );
+
+INSERT Actor VALUES ( 'Jenny', 'Slate' );
+
+INSERT Actor VALUES ( 'Simon', 'Baker' );
+
+INSERT Actor VALUES ( 'Robert', 'Joy' );
+
+INSERT Actor VALUES ( 'Rose', 'Byrne' );
+
+INSERT Actor VALUES ( 'Jeremy', 'Renner' );
+
+
+--Insert a MovieActor record for each actor entered (at least 8)
+
+INSERT MovieActor VALUES ( 12,30 );
+
+INSERT MovieActor VALUES ( 12,31 );
+
+INSERT MovieActor VALUES ( 11,32 );
+
+INSERT MovieActor VALUES ( 11,33 );
+
+INSERT MovieActor VALUES ( 10, 34 );
+
+INSERT MovieActor VALUES ( 10, 35 );
+
+INSERT MovieActor VALUES ( 9, 36 );
+
+INSERT MovieActor VALUES ( 9, 37 );
+
+
+--Insert the following into the Genre table 
+--  2 genres  
+
+INSERT Genre VALUES ( 'Horor' );
+
+INSERT Genre VALUES ( 'Western' );
+
+
+--Insert a MovieGenre record for each movie entered (at least 4)
+
+INSERT MovieGenre VALUES( 9, 'Horror' );
+
+INSERT MovieGenre VALUES( 10, 'Horror' );
+
+INSERT MovieGenre VALUES( 11, 'Children' );
+
+INSERT MovieGenre VALUES( 12, 'Children' );
+
+
+--Insert 4 movie items for each movie entered, a total of 16 movie items
+
+INSERT MovieItem VALUES ( 'D', '4.50', 12 );
+
+INSERT MovieItem VALUES ( 'D', '4.50', 12 );
+
+INSERT MovieItem VALUES ( 'B', '4.50', 12 );
+
+INSERT MovieItem VALUES ( 'B', '4.50', 12 );
+
+INSERT MovieItem VALUES ( 'D', '4.50', 11 );
+
+INSERT MovieItem VALUES ( 'D', '4.50', 11 );
+
+INSERT MovieItem VALUES ( 'B', '4.50', 11 );
+
+INSERT MovieItem VALUES ( 'B', '4.50', 11 );
+
+INSERT MovieItem VALUES ( 'D', '4.50', 10 );
+
+INSERT MovieItem VALUES ( 'D', '4.50', 10 );
+
+INSERT MovieItem VALUES ( 'B', '4.50', 10 );
+
+INSERT MovieItem VALUES ( 'B', '4.50', 10 );
+
+INSERT MovieItem VALUES ( 'D', '4.50', 9 );
+
+INSERT MovieItem VALUES ( 'D', '4.50', 9 );
+
+INSERT MovieItem VALUES ( 'B', '4.50', 9 );
+
+INSERT MovieItem VALUES ( 'B', '4.50', 9 );
+
+
+--Insert the following into the Rental table
+--  4 rental records that have been returned on time
+--  2 rental records that have been returned late
+--  2 rental records that have not yet been returned
+
+INSERT Rental VALUES( 5, 45, '2018-03-02', '2018-03-05' );
+
+INSERT Rental VALUES( 5, 11, '2017-06-22', '2017-06-25');
+
+INSERT Rental VALUES( 9, 19, '2005-05-15', '2005-05-18' );
+
+INSERT Rental VALUES( 11, 22, '2016-03-01', '2016-03-04' );
+
+INSERT Rental VALUES( 2, 55, '2018-04-06', '2018-04-11' );
+
+INSERT Rental VALUES( 6, 1, '2016-05-5', '2016-05-10' );
+
+INSERT Rental VALUES( 2, 13, '2018-06-18', NULL );
+
+INSERT Rental VALUES( 12, 10, '2018-06-18', NULL );
+
+
+--Insert the following into the OverdueFee table
+--  2 overdue records for the rentals from above that were returned late
+
+INSERT OverDueFee VALUES( 16, 3.00, 0 );
+
+INSERT OverDueFee VALUES( 17, 3.50, 0 );
+
+
+--Insert the following into the Reservation table
+--  4 reservation records that have been filled
+--  2 reservation records that have not been filled
+--  Make some BluRay and some DVDs
+
+INSERT Reservation VALUES ( 3, 11, 'B', 1 );
+
+INSERT Reservation VALUES ( 10, 8, 'D', 1 );
+
+INSERT Reservation VALUES ( 11, 7, 'D', 1 );
+
+INSERT Reservation VALUES ( 3, 9, 'B', 1 );
+
+INSERT Reservation VALUES ( 7, 8, 'D', 0 );
+
+INSERT Reservation VALUES ( 19, 11, 'B', 0 );
+
+
+--Write a SELECT statement to test to make sure that accounts related 
+--  to standard customers or employee only users do not have any reservations
+--Include the user id, first name, last name, and customer type 
+--  and reservation id (if passes the test, will be empty)
+
+SELECT User1.UserId, FirstName, LastName, CustomerType
+	FROM Reservation JOIN User1
+	ON Reservation.CustomerId = User1.UserId
+	WHERE CustomerType IN( 'E', 'S');
+
+
+--Change the condition to premium customers 
+--Include the user id, first name, last name, and customer type 
+--  and reservation id (if passes the test, the results will include 
+--  all reservations)
+
+SELECT User1.UserId, FirstName, LastName, CustomerType
+	FROM Reservation JOIN User1
+	ON Reservation.CustomerId = User1.UserId
+	WHERE CustomerType = 'P';
+
+
+--Write a SELECT statement to make sure users that are employees only 
+--  do not have any rental records
+--Include the user id, first name, last name, and customer type 
+--  and rental id (if passes the test, will be empty)
+
+ SELECT UserId, FirstName, LastName, CustomerType
+	FROM Rental JOIN User1
+	ON Rental.CustomerId = User1.UserId
+	WHERE UserType = 'E'
+
+
+--Change the condition to customers
+--Include the user id, first name, last name, and customer type 
+--  and rental id (if passes the test, the results will include 
+--  all rentals)
+
+SELECT UserId, FirstName, LastName, CustomerType
+	FROM Rental JOIN User1
+	ON Rental.CustomerId = User1.UserId
+	WHERE UserType IN ('C', 'B');
+
+
+-- Make the following updates
+
+--Change first name of user 3 to Martin
+
+UPDATE User1
+	SET FirstName = 'Martin'
+	WHERE UserId IN ( 1, 4, 8);
+
+--Change the rental fee for all movie 4 movie items to $1.99.
+--Do this by writing a SELECT statement that gets all the movie item ids 
+--  of movie 4. Then use that SELECT statement in the WHERE 
+--  clause to UPDATE the renal fees to $1.99
+
+UPDATE MovieItem
+	SET RentalFee = 1.99
+	WHERE MovieItemId IN (	SELECT MovieItemId
+								FROM MovieItem
+								WHERE MovieId = 4);
+
+
+--Do the following deletions 
+
+--Remove question 3. It has never been used.
+
+DELETE FROM Question
+	WHERE QuestionId = 3;

@@ -1,0 +1,105 @@
+USE master
+DROP DATABASE IF EXISTS WellMoneyBank;
+
+CREATE DATABASE WellMoneyBank
+ON PRIMARY (
+	NAME = WellMoneyBank,
+	FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\WellMoneyBank.mdf',
+	SIZE = 5120KB,
+	FILEGROWTH = 1024Kb)
+LOG ON (
+	NAME = WellMoneyBank_log,
+	FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\WellMoneyBank_log.ldf',
+	SIZE = 2048KB,
+	FILEGROWTH = 10%);
+
+GO
+
+USE WellMoneyBank
+
+
+CREATE TABLE User1 (
+	UserId int IDENTITY NOT NULL,
+	UserType CHAR NOT NULL DEFAULT 'C'
+		CONSTRAINT checkUserType 
+		CHECK ( UserType IN ('E', 'C', 'B')),
+	FirstName NVARCHAR(35) NOT NULL,
+	LastName NVARCHAR(35) NOT NULL,
+	Password NVARCHAR(128) NOT NULL,
+	Email NVARCHAR(255) NOT NULL,
+	CustomerType CHAR NOT NULL DEFAULT 'S'
+		CONSTRAINT checkCustomerType
+		CHECK (CustomerType IN ('S', 'P')),
+	CONSTRAINT pkUser1 PRIMARY KEY (UserId));
+
+
+CREATE TABLE PhoneNumber (
+	PhoneNumber CHAR(10) NOT NULL,
+	UserId INT NOT NULL,
+	CONSTRAINT pkPhoneNumber PRIMARY KEY (PhoneNumber, UserId),
+	CONSTRAINT fkPhoneNumber 
+		FOREIGN KEY (UserId) REFERENCES User1 (UserId));
+
+
+
+CREATE TABLE Question (
+	QuestionId TINYINT IDENTITY NOT NULL,
+	Question VARCHAR(128) NOT NULL,
+	CONSTRAINT pkQuestion PRIMARY KEY (QuestionId));
+
+
+CREATE TABLE SecurityQuestion (
+	UserId INT NOT NULL,
+	QuestionId TINYINT NOT NULL,
+	Answer VARCHAR(64) NOT NULL,
+	CONSTRAINT pkSecurityQuestion PRIMARY KEY (UserId, QuestionId),
+	CONSTRAINT fkUserIdInSecurityQuestion 
+		FOREIGN KEY (UserId) REFERENCES User1 (UserId),
+	CONSTRAINT  fkQuestionIdInSecurityQuestion
+		FOREIGN KEY (QuestionId) REFERENCES Question (QuestionId));
+
+
+CREATE TABLE Branch (
+	BranchNumber SMALLINT IDENTITY NOT NULL,
+	Manager INT NOT NULL,
+	StreetAddress VARCHAR(128) NOT NULL,
+	City VARCHAR(64) NOT NULL,
+	State CHAR(2) NOT NULL,
+	CONSTRAINT pkBranch PRIMARY KEY (BranchNumber),
+	CONSTRAINT fkManagerInBranch 
+		FOREIGN KEY (Manager) REFERENCES User1 (UserId));
+
+
+CREATE TABLE Account (
+	AccountNumber INT IDENTITY(1000000000,1) NOT NULL,
+	AccountType CHAR NOT NULL DEFAULT 'S'
+		CONSTRAINT checkAccountType
+		CHECK (AccountType IN('C', 'S')),
+	MainBranch SMALLINT NOT NULL,
+	ServiceFee SMALLMONEY NOT NULL,
+	CONSTRAINT pkAccount PRIMARY KEY (AccountNumber),
+	CONSTRAINT fkMainBranchInAccount
+		FOREIGN KEY (MainBranch)  REFERENCES Branch (BranchNumber));
+
+
+CREATE TABLE UserAccount (
+	UserId INT NOT NULL,
+	AccountNumber INT NOT NULL,
+	CONSTRAINT pkUserAccount PRIMARY KEY (UserId, AccountNumber),
+	CONSTRAINT fkUserIdInUserAccount
+		FOREIGN KEY (UserId) REFERENCES User1 (UserId),
+	CONSTRAINT fkAccountNumberInAccountNumber
+		FOREIGN KEY (AccountNumber) REFERENCES Account (AccountNumber));
+
+
+CREATE TABLE Transaction1 (
+	TrainsactionId BIGINT IDENTITY NOT NULL,
+	Type CHAR NOT NULL
+		CONSTRAINT CheckType
+		CHECK (Type IN ('D', 'W', 'P')),
+	Account INT NOT NULL,
+	Amount MONEY NOT NULL,
+	Date SMALLDATETIME NOT NULL,
+	CONSTRAINT pkTransaction1 PRIMARY KEY (TrainsactionId),
+	CONSTRAINT fkAccountInTransaction1
+		FOREIGN KEY (Account) REFERENCES Account (AccountNumber));

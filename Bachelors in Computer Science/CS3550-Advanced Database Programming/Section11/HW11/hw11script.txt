@@ -1,0 +1,95 @@
+
+//Write a mongo command for each of the following
+
+
+//1. Set the mongo shell to use the video database
+
+use video
+
+//2. How many movies are from 2011.
+
+db.movieDetails.find( { year:2011 } ).count()
+
+//3. List one movie from 1996. Include all the details. 
+
+db.movieDetails.findOne( { year:1996 } )
+
+//4. List one movie from 1996. Only include title, 
+//   released, genres, and actors. 
+  
+db.movieDetails.findOne( { year:1996 }, 
+	{ title:1, released:1, genres:1, actors:1 } )
+
+//5. List one movie from 1996. Include all the fields 
+//   except plot, poster, and imbd. 
+
+db.movieDetails.findOne( { year:1996 }, 
+	{ plot:0, poster:0, imdb:0 } )
+
+//6. How many movies were filmed in Iceland?
+
+db.movieDetails.find( { countries: "ICELAND" } ).count()
+
+//7. How many movies have a runtime greater than 90?
+
+db.movieDetails.find( { runtime: {$gt: 90} } ).count()
+
+//8. How many movies have a runtime between 60 and 120, 
+//   including both 60 and 120?
+
+db.movieDetails.find( { runtime: {$gte: 60, $lte: 120} } ).count()
+
+//9. Update a document, set runtime to 61 for the movie
+//   tited Dv.
+
+db.movieDetails.update( {title:"Dv"}, { $set: {runtime:61} } )
+
+//10. Use insertOne to add a document with the following fields 
+//    title, year, rated, runtime, and at least two genres
+
+db.movieDetails.insertOne( {
+	title: "The man on the moon",
+	year: "2002",
+	rated: "R",
+	runtime: 201,
+	genres: ["Fiction", "Horror"]
+} )
+
+//11. Write a findOne command using the title field that displays 
+//    the newly added document
+
+db.movieDetails.findOne( { title: "The man on the moon" } )
+
+//12. Use insertMany to add two documents with the following fields 
+//    title, year, rated, runtime, and at least two genres
+//    Each movie is to have different values for each field
+
+db.movieDetails.insertMany( [{ 
+	title: "Thing",
+	year: "1988",
+	rated: "PG",
+	runtime: 60,
+	genres: ["Romance", "Action"]
+},
+{
+	title: "Because no",
+	year: "2018",
+	rated: "G",
+	runtime: 35,
+	genres: ["Anime", "Thriller"]
+}] )
+
+//13. Write a find command using the title field and the $in 
+//    comparison operator that displays the two newly added documents
+
+db.movieDetails.find( { title: {$in: [ "Thing", "Because no" ] } } )
+
+//14. How many movies have 7 award wins? The awards field
+//    is a document. To access a field within a nested
+//    document, use the "mainField.innerField" notation.
+//    For example, if a document had a field named vehicle
+//    and vehicle was a document with a field named year,
+//    the year could be accessed by using "vehicle.year" as
+//    the name. The "s are required.
+
+db.movieDetails.find( { "awards.wins": 7 } ).count()

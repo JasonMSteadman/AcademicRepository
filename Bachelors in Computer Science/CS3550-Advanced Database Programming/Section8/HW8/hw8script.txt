@@ -1,0 +1,282 @@
+
+
+--****************Add Reservation Procedure*********************************
+
+
+--Set Management Studio to use the PurpleBox database. 
+
+USE PurpleBox;
+GO
+
+--DROP the following procedure if it exists
+
+
+
+--Create a procedure for reserving a movie
+--Parameters: customer id, movie id, movie type
+--  Check that user is a premium customer
+--    If not premium, print specific error and end procedure
+--  Check that user has not reached maximum reservation number
+--    If reached limit, print specific error and end procedure
+--  Check for an existing reservation for this customer, this movie, this type, and
+--    it has not been filled yet
+--    If reservation already exists, print specific error and end procedure
+--  Use the user-defined function created in a previous activity to make 
+--  sure no movie items for that movie and type are available
+--    If one is available, print specific error and end procedure
+--  Add a new reservation record
+
+--Use a TRY CATCH block to handle when the INSERT doesn't work.
+--If the INSERT works, print a message about reservation added successfully
+--If it doesn't work, print error message about reservation record not added
+
+--Execute the following statements to test the previous procedure
+--Some will produce errors and ***three will result in additions to 
+--  the Reservation table
+
+
+USE PurpleBox
+GO
+
+DROP PROCEDURE IF EXISTS ReserveMovie
+GO
+
+CREATE PROCEDURE ReserveMovie ( @CustomerId INT, @MovieId INT, @Type CHAR )
+
+AS
+
+	IF ( (SELECT TOP 1 CustomerType FROM User1 WHERE UserId = @CustomerId) != 'P' )
+		BEGIN 
+			PRINT 'Error, only premium customers can reserve movies.'
+			RETURN
+		END
+
+	IF ( (SELECT COUNT(*) FROM Reservation WHERE CustomerId = @CustomerId) >= 4 )
+		BEGIN
+			PRINT 'Error, customer has revserved maximum amount of movies.'
+			RETURN
+		END
+
+	IF ( (SELECT COUNT(*) FROM Reservation WHERE CustomerId = @CustomerId AND Type = @Type
+		AND MovieId = @MovieId) <> 0 )
+		BEGIN
+			PRINT 'Error, reservation already exists.'
+			RETURN
+		END
+
+	IF ( (dbo.GetAvailableMovieId ( @MovieId, @Type )) <> -1 )
+		BEGIN
+			PRINT 'Error, this movie is currently in stock.'
+			RETURN
+		END
+
+	BEGIN TRY
+		INSERT INTO Reservation VALUES ( @CustomerId, @MovieId, @Type, 0 )
+		PRINT 'Reservation has been added.'
+	END TRY
+	BEGIN CATCH
+		PRINT 'Error, the reservation has not been added.'
+		RETURN
+	END CATCH
+
+
+--Add GO at the end of the procedure
+GO
+
+
+--Execute the following statements to test the previous procedure
+
+--Set Management Studio to use the PurpleBox database. 
+USE PurpleBox;
+GO
+
+--works
+EXECUTE ReserveMovie 15, 1, 'B'
+
+--standard customer, no reservation
+EXECUTE ReserveMovie 6, 8, 'D'
+
+--reached max reservations, no reservation added
+EXECUTE ReserveMovie 10, 6, 'B'
+
+--already has reservation for this movie and type, no reservation added
+EXECUTE ReserveMovie 3, 5, 'D'
+
+--movie of this type currently available for rent, no reservation added
+EXECUTE ReserveMovie 15, 4, 'B'
+
+--Error on INSERT, no reservation added
+EXECUTE ReserveMovie 3, 105, 'D'
+
+--works
+EXECUTE ReserveMovie 3, 8, 'D'
+
+
+
+--*******************Find Reservation Function***************************
+
+USE PurpleBox;
+GO
+
+--DROP the following function if it exists
+
+
+
+--Create a User-Defined Function that returns the reservation id of 
+--  the first reservation that is still active for this movie and this type 
+--Parameters: movie item id
+--Returns: an INT, the reservation id or -1 if there is no active reservation
+--  for this movie and this type
+
+USE PurpleBox
+GO
+
+DROP FUNCTION IF EXISTS FindReservation
+GO
+
+CREATE FUNCTION FindReservation ( @MovieItemId INT )
+	RETURNS INT
+
+AS
+	BEGIN
+		DECLARE @Reservation INT,
+				@Type CHAR,
+				@MovieId INT
+
+		SELECT @MovieId = MovieId, @Type = Type FROM MovieItem 
+			WHERE MovieItemId = @MovieItemId
+		
+		SET @Reservation = (SELECT TOP 1 ReservationId FROM Reservation 
+								WHERE Type = @Type AND MovieId = @MovieId AND IsFilled = 0)
+
+		IF ( @Reservation <> 0)
+			RETURN @Reservation
+
+		RETURN -1
+	END
+
+
+
+
+
+--Add GO at the end of the function
+GO
+
+
+--Execute the following statements to test the previous function
+
+--Set Management Studio to use the PurpleBox database. 
+USE PurpleBox;
+GO
+
+--Returns -1
+PRINT dbo.FindReservation( 17 )
+
+--Returns 6
+PRINT dbo.FindReservation( 22 )
+
+--Returns -1
+PRINT dbo.FindReservation( 23 )
+
+--Returns 9
+PRINT dbo.FindReservation( 4 )
+
+
+--***************Return a Movie Trigger, Reservation Check********************
+
+
+--Set Management Studio to use the PurpleBox database. 
+
+USE PurpleBox;
+GO
+
+--DROP the following function if it exists
+
+
+
+
+--Create a trigger for the Rental table. The trigger is to be executed when 
+--  the return date of a rental is updated
+--The trigger is to call the previous function to get a reservation id. If 
+--  there is a reservation for item just returned, it is to call the 
+--  RentMovie procedure created in a previous acitvity to rent the movie 
+--  to the first customer that had it reserved (this can be determined by 
+--  the reservation id). 
+--Once the rental has been processed successfully, the reservation
+--  is to be updated showing that it has been filled.
+-- When there is no matching rental, print a message that there is no 
+--  reservation so no rental was added.
+ 
+
+--NOTE: This is to be a separate trigger from the overdue fee trigger. Even
+--  though they are both triggered by the same event, they will be two 
+--  separate triggers with different names.
+
+
+USE PurpleBox
+GO
+
+DROP TRIGGER IF EXISTS MovieTrigger
+GO
+
+CREATE TRIGGER MovieTrigger
+	ON Rental AFTER UPDATE
+
+AS
+	
+	IF ( UPDATE (ReturnDate) )
+		BEGIN
+			DECLARE @Reservation INT
+			SET @Reservation = dbo.FindReservation( (SELECT TOP 1 MovieItemId FROM inserted) )
+			
+			IF ( @Reservation = -1 )
+				BEGIN
+					PRINT 'There are no reservations for this movie, no rentals added'
+					RETURN
+				END	
+
+			DECLARE @Customer INT,
+					@MovieId INT,
+					@Type CHAR
+
+			SELECT @Customer = CustomerId, @MovieId = MovieId, @Type = Type 
+				FROM Reservation WHERE ReservationId = @Reservation
+
+			EXECUTE RentMovie @Customer, @MovieId, @Type
+			UPDATE Reservation SET IsFilled = 1
+				WHERE ReservationId = @Reservation
+
+		END
+
+
+--Add GO at the end of the trigger
+GO
+
+
+--Execute the following statements to test the previous trigger
+
+--Set Management Studio to use the PurpleBox database. 
+USE PurpleBox;
+GO
+
+
+--No reservation waiting for this movie, no rental made 
+--(late fee will also be added from other trigger)
+UPDATE Rental SET ReturnDate = '2018-07-08'
+  WHERE RentalId = 19
+
+--No reservation waiting for this movie, no rental made 
+--(no late fee)
+UPDATE Rental SET ReturnDate = '2018-07-06'
+  WHERE RentalId = 27
+
+
+--Reservation waiting, rental made 
+--(late fee will also be added from other trigger)
+UPDATE Rental SET ReturnDate = '2018-07-01'
+  WHERE RentalId = 9
+
+--Reservation waiting, rental made (no late fee)
+UPDATE Rental SET ReturnDate = '2018-07-05'
+  WHERE RentalId = 22
+

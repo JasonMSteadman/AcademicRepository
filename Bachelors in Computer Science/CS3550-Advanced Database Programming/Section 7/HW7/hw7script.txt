@@ -1,0 +1,475 @@
+
+--****************Test Data*********************************
+
+--Set Management Studio to use the PurpleBoxTest database.
+
+USE PurpleBoxTest
+
+
+--The following queries are designed to find problem cases in the data. The 
+--  results returned will be where the data does not follow the specifications in 
+--  the scenario.
+
+
+
+--Write a query to find any employee only users that have a customer type  
+--  that is not NULL. 
+-- Include user id, first name, last name, user type, and customer type
+
+SELECT UserId, FirstName, LastName, UserType, CustomerType
+	FROM User1
+	WHERE UserType = 'E'
+		AND CustomerType IS NOT NULL;
+
+
+--Write a query to find any customer that is not designated as a standard or
+--  premium customer   
+-- Include user id, first name, last name, user type, and customer type
+
+SELECT UserId, FirstName, LastName, UserType, CustomerType
+	FROM User1
+	WHERE UserType IN ('B', 'C')
+		AND CustomerType IS NULL;
+
+
+--Write a query that finds any users without a phone number
+--Include user id, first name, last name
+
+SELECT UserId, FirstName, LastName
+	FROM User1
+	WHERE UserId NOT IN (	SELECT UserId
+					FROM PhoneNumber);
+
+
+--Write a query that finds any users the don't have exactly two security questions,
+--  including those with no questions
+--Include user id, first name, last name, and the number of questions they have (or
+--  NULL if they have none)
+
+SELECT User1.UserId, FirstName, LastName, 
+	CASE
+		WHEN User1.UserId NOT IN (	SELECT UserId
+							FROM SecurityQuestion) THEN NULL
+		ELSE COUNT(*)
+	END AS 'Number Of Questions'
+	FROM User1 LEFT JOIN SecurityQuestion
+		ON User1.UserId = SecurityQuestion.UserId		 
+	GROUP BY User1.UserId, FirstName, LastName
+	HAVING COUNT(*) <> 2;
+
+
+--****************Add User*********************************
+
+--Set Management Studio to use the PurpleBox2 database. This is a version of 
+--  the database before entries were manually added
+
+
+
+
+
+--DROP the following procedure if it exists
+
+
+
+
+
+--Create a Procedure to insert a new User
+--Parameters include: first name, last name, password, email, user type, 
+--  customer type, phone number, 1st question id, 1st answer,  
+--  2nd question id, 2nd answer
+--Test that user type and customer type are an allowed combination
+--   If not valid, print specific error and end procedure
+--Test that the security question ids are not the same
+--   If both are the same question, print specific error and end procedure
+--Add one complete user entry
+--  Let the DBMS add the IDENTITY value for UserId 
+--  Then use that UserId value when adding the following 
+--Add one phone number record
+--Add two security question records
+
+--USE a TRY CATCH block with BEGIN TRANSACTION, COMMIT TRANSACTION, and 
+--ROLLBACK to make sure none of the INSERTs happen unless they all work.
+--If they work, print a message about user added successfully, include user id
+--If they don't work, print error message about user was not added
+
+
+USE PurpleBox2
+
+DROP PROCEDURE IF EXISTS AddUser
+
+GO
+
+CREATE PROCEDURE AddUser (
+	@FirstName NVARCHAR(35),
+	@LastName NVARCHAR(35),
+	@Password NVARCHAR(128),
+	@Email NVARCHAR(255),
+	@UserType CHAR,
+	@CustomerType CHAR,
+	@PhoneNumber CHAR(10),
+	@FirstQuestionId TINYINT,
+	@FirstAnser VARCHAR(64),
+	@SecondQuestionId TINYINT,
+	@SecondAnswer VARCHAR(64) )
+
+AS
+	IF @UserType = 'E'
+		AND @CustomerType IS NOT NULL
+	BEGIN
+		PRINT 'Error! An Employee only UserType can not have a CustomerType'
+		RETURN
+	END
+
+	IF @UserType IN ('B', 'C')
+		AND @CustomerType IS NULL
+	BEGIN
+		PRINT 'Error! A customer UserType must have a CustomerType.'
+		RETURN
+	END
+	
+	IF @FirstQuestionId = @SecondQuestionId
+	BEGIN
+		PRINT 'Error!  Cannot use the same Security question.'
+		RETURN
+	END
+
+	DECLARE @UserId INT;
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO User1 VALUES (	@FirstName,
+										@LastName,
+										@Password,
+										@Email,
+										0,
+										@UserType,
+										@CustomerType);
+			
+			SET @UserId = (	SELECT UserId
+								FROM User1
+								WHERE FirstName = @FirstName
+									AND LastName = @LastName
+									AND Email = @Email);
+
+			INSERT INTO PhoneNumber VALUES (@PhoneNumber, @UserId);
+
+			INSERT INTO SecurityQuestion VALUES (@UserId, @FirstQuestionId, @FirstAnser);
+
+			INSERT INTO SecurityQuestion VALUES (@UserId, @SecondQuestionId, @SecondAnswer);
+		
+		COMMIT TRANSACTION
+		PRINT 'User added to the database ' + CAST(@UserId AS CHAR);
+	END TRY
+	BEGIN CATCH
+		ROLLBACK
+		PRINT 'An Error has occured.  The User was not added to the database'
+	END CATCH
+GO
+
+
+--You can execute the following statements to test the previous procedure
+--Some will produce errors and three will result in additions to 
+--  the User1 table
+
+
+--Works
+EXECUTE AddUser 
+  'Marilyn', 'Anderson', '34ayJIo8**', 'mari.and@gmail.com', 'C', 'S',
+  '4356830234', 2, 'Walter',  7, 'Pooch'
+
+--Incorrect User/Customer type combination
+EXECUTE AddUser 
+  'George', 'Pilkington', 'siop)Oeo^^', 'george.pil@gmail.com', 'E', 'S',
+  '8013549786', 1, 'Mary',  3, 'Chicken' 
+
+--Same question number
+EXECUTE AddUser 
+  'Walter', 'Freeman', 'ieOieow8***', 'free.wal@aol.com', 'C', 'P',
+  '8016549876', 4, 'Logan',  4, 'Haystack' 
+
+-Works
+EXECUTE AddUser 
+  'Sandra', 'Wilkinson', 'fjiesYUU65', 'sandy@work.net', 'C', 'P',
+  '9726598764', 7, 'Space',  2, 'Inside High' 
+
+--Incorrect question number, system produces error
+EXECUTE AddUser 
+  'Marie', 'Christianson', '3iofTR$%', 'marie.chirst@hotmail.com', 'E', NULL,
+  '2086498765', 6, 'John',  108, 'Outside High' 
+
+--Works
+EXECUTE AddUser 
+  'Luke', 'Spillman', 'seoOIJ34%**', 'spill@gmail.com', 'B', 'P',
+  '2086983216', 5, 'Reynold',  1, 'Big Oak' 
+ 
+
+
+--Once the procedure is working correctly, insert two additional users  
+--  that produce no errors
+
+EXECUTE AddUser 
+  'Some', 'Guy', '565ad', 'guy@gmail.com', 'E', NULL,
+  '3569871543', 1, 'nope',  5, 'nopenope'
+
+EXECUTE AddUser 
+  'Some', 'Girl', '*(#*$(', 'girl@gmail.com', 'B', 'P',
+  '8499996210', 6, 'yep',  7, 'yepyep'
+
+ 
+ --****************Add Movie*********************************
+
+--Set Management Studio to use the PurpleBox2 database. This is a version of 
+--  the database before entries were manually added
+
+
+
+
+--DROP the following procedure if it exists
+
+
+
+
+ --Create a Procedure to insert a new Movie
+--Parameters include: title, description, mpaa rating, quantity of Blu-ray copies,
+--  rental fee for Blu-ray copies, quantity of DVD copies, rental fee for DVD copies,
+--  director first and last name, actor 1 first and last name, actor 2 first and last name
+--  actor 3 first and last name, genre 
+--Add one Movie entry
+--  Let the DBMS add the IDENTITY value for the MovieId 
+--  Then use that MovieId value when adding the following 
+--Add one movie item record for each Blu-ray copy
+--Add one movie item record for each DVD copy
+--Add a MovieDirector record 
+--  If the *first and last name of the director is in the data, use that DirectorId
+--  If not, add a record in the Director table and use the DirectorId generated by the DBMS
+--Add three MovieActor records 
+--  If the *first and last name of the actor is in the data, use that ActorId
+--  If not, add a record in the Actor table and use the ActorId generated by the DBMS
+--Add one MovieGenre record 
+--  If the genre is in the data, use that GenreId
+--  If not, add a record in the Genre table and use the GenreId generated by the DBMS
+
+--USE a TRY CATCH block with BEGIN TRANSACTION, COMMIT TRANSACTION, and 
+--ROLLBACK to make sure none of the INSERTs happen unless they all work.
+--If they work, print a message about movie added successfully, include movie id
+--If they don't work, print error message about movie was not added
+
+--*Using first and last name is a simplification. There would need to be another detail
+--  such as birthdate to find a specific actor or director
+--Can use TOP 1 to ensure you only get one id selected
+
+
+USE PurpleBox2
+
+DROP PROCEDURE IF EXISTS AddMovie
+
+GO
+
+CREATE PROCEDURE AddMovie (
+	@Title NVARCHAR(128),
+	@Description NVARCHAR(1028), 
+	@MpaaRating VARCHAR(5), 
+	@QuantityBlu TINYINT,
+    @BluRentalFee SMALLMONEY,
+	@QuantityDVD TINYINT, 
+	@DVDrentalFee SMALLMONEY,
+    @DirectorFirstName NVARCHAR(35),
+	@DirectorLastName NVARCHAR(35),
+	@ActorOneFirstName NVARCHAR(35),
+	@ActorOneLastName NVARCHAR(35), 
+	@ActorTwoFirstName NVARCHAR(35),
+	@ActorTwoLastName NVARCHAR(35),
+	@ActorThreeFirstName NVARCHAR(35),
+	@ActorThreeLastName NVARCHAR(35), 
+	@Genre VARCHAR(12) )
+
+AS
+
+	DECLARE @MovieId INT,
+			@ActorId INT,
+			@DirectorId INT
+			
+
+	BEGIN TRY
+		BEGIN TRANSACTION
+			INSERT INTO Movie VALUES (	@Title,
+										@Description,
+										@MpaaRating)
+
+			SET @MovieId = (	SELECT MovieId
+									FROM Movie
+									WHERE Title = @Title)
+
+			WHILE @QuantityBlu > 0
+				BEGIN
+					INSERT INTO MovieItem VALUES (	'B',
+													@BluRentalFee,
+													@MovieId)
+					SET @QuantityBlu = @QuantityBlu - 1		
+				END
+
+			WHILE @QuantityDVD > 0
+				BEGIN
+					INSERT INTO MovieItem VALUES (	'D',
+													@DVDrentalFee,
+													@MovieId)
+					SET @QuantityDVD = @QuantityDVD - 1
+				END
+
+			IF	@DirectorFirstName NOT IN  (	SELECT FirstName
+													FROM Director) OR
+				@DirectorLastName NOT IN (	SELECT LastName
+												FROM Director)
+				BEGIN
+					INSERT INTO Director VALUES (@DirectorFirstName, @DirectorLastName)
+					PRINT @DirectorFirstName + ' ' + @DirectorLastName + ' was added to the Director table.';
+				END			 
+
+			SET @DirectorId = (	SELECT TOP 1 DirectorId		
+									FROM Director
+								WHERE FirstName = @DirectorFirstName
+								AND LastName = @DirectorLastName)
+
+			INSERT INTO MovieDirector VALUES ( @MovieId, @DirectorId)
+			
+			IF @ActorOneFirstName NOT IN (	SELECT FirstName
+												FROM Actor) OR
+				@ActorOneLastName NOT IN (	SELECT LastName
+												FROM Actor) 
+				BEGIN 
+					INSERT INTO Actor VALUES ( @ActorOneFirstName, @ActorOneLastName)
+					PRINT @ActorOneFirstName + ' ' + @ActorOneLastName + ' was added to the actor table.';
+				END
+
+			SET @ActorId = (	SELECT TOP 1 ActorId
+									FROM Actor
+								WHERE FirstName = @ActorOneFirstName
+									AND LastName = @ActorOneLastName) 
+				
+			INSERT INTO MovieActor VALUES (@MovieId, @ActorId)
+			
+			IF @ActorTwoFirstName NOT IN (	SELECT FirstName
+												FROM Actor) OR
+				@ActorTwoLastName NOT IN (	SELECT LastName	
+												FROM Actor)
+				BEGIN
+					INSERT INTO Actor VALUES (@ActorTwoFirstName, @ActorTwoLastName)
+					PRINT @ActorTwoFirstName + ' ' + @ActorTwoLastName + 'was added to the actor table.';
+				END
+				 
+			SET @ActorId = (	SELECT TOP 1 ActorId
+									FROM Actor
+								WHERE FirstName = @ActorTwoFirstName
+									AND LastName = @ActorTwoLastName)
+
+			INSERT INTO MovieActor VALUES (@MovieId, @ActorId)
+
+			IF @ActorThreeFirstName NOT IN (	SELECT FirstName
+													FROM Actor) OR
+				@ActorThreeLastName NOT IN (	SELECT LastName
+													FROM Actor)
+				BEGIN
+					INSERT INTO Actor VALUES (@ActorThreeFirstName, @ActorThreeLastName)
+					PRINT @ActorThreeFirstName + ' ' + @ActorThreeLastName + 'was added to the actor table.';
+				END
+
+			SET @ActorId = (	SELECT TOP 1 ActorId
+									FROM Actor
+								WHERE FirstName = @ActorThreeFirstName
+									AND LastName = @ActorThreeLastName)
+
+			INSERT INTO MovieActor VALUES (@MovieId, @ActorId)
+			
+			IF @Genre NOT IN (	SELECT GenreName
+									FROM Genre)
+				BEGIN 
+					INSERT INTO Genre VALUES (@Genre)
+					PRINT @Genre + ' was added to the genre table.';
+				END
+			
+			INSERT INTO MovieGenre VALUES (@MovieId, @Genre)
+
+		COMMIT TRANSACTION 
+		PRINT @Title + ' was added as MoveId ' + CAST(@MovieId AS CHAR);
+	END TRY
+	BEGIN CATCH
+		ROLLBACK
+		PRINT 'An error has occured. No data will be added to the database.'
+	END CATCH
+
+GO
+
+
+--You can execute the following statements to test the previous procedure
+--These all result in successfully adding a movie
+
+
+--Works, adds new director, new actors, existing genre
+EXECUTE AddMovie
+  'Jurassic World: Fallen Kingdom', 
+  'When a volcano on Isla Nublar threatens to endanger the dinosaurs, Claire (Bryce Dallas Howard) recruits Owen (Chris Pratt) to rescue the animals from total extinction. Upon their arrival, they soon discover a sinister operation is afoot that exploits the animals. Jeff Goldblum also stars. Directed by J.A. Bayona.',
+  'PG-13', 7, 6.99, 15, 5.99, 'Juan Antonio', 'Bayona', 
+  'Chris', 'Pratt', 
+  'Bryce Dallas', 'Howard',
+  'Rafe', 'Spall',
+  'Action'
+
+--Works, adds new director, new actors, new genre
+EXECUTE AddMovie
+  'The Incredibles 2',
+  'Mr. Incredible (Craig T. Nelson) is left home with Violet (Sarah Vowell), Dash (Huck Milner) and Jack-Jack when Elastigirl (Holly Hunter) becomes the new face of superheros in a rebranding attempt. As he juggles endless household chores, she gets to work to save everyone from a new villain. Bob Odenkirk, Samuel L. Jackson and Catherine Keener also star. This animated sequel is written and directed by Brad Bird.',
+  'PG', 14, 5.99, 12, 4.99, 'Brad', 'Bird',
+  'Samuel L.', 'Jackson',
+  'Sarah', 'Vowell',
+  'Holly', 'Hunter',
+  'Adventure'
+
+--Works, uses existing director, new actors, existing genre
+EXECUTE AddMovie
+  'Schindler''s List',
+  'Based on a true story, Steven Spielberg''s Schindler''s List stars Liam Neeson as Oskar Schindler, a German businessman in Poland who sees an opportunity to make money from the Nazis'' rise to power. He starts a company to make cookware and utensils, using flattery and bribes to win military contracts, and brings in accountant and financier Itzhak Stern (Ben Kingsley) to help run the factory. By staffing his plant with Jews who''ve been herded into Krakow''s ghetto by Nazi troops, Schindler has a dependable unpaid labor force. For Stern, a job in a war-related plant could mean survival for himself and the other Jews working for Schindler. However, in 1942, all of Krakow''s Jews are assigned to the Plaszow Forced Labor Camp, overseen by Commandant Amon Goeth (Ralph Fiennes), an embittered alcoholic who occasionally shoots prisoners from his balcony. Schindler arranges to continue using Polish Jews in his plant, but, as he sees what is happening to his employees, he begins to develop a conscience. He realizes that his factory (now refitted to manufacture ammunition) is the only thing preventing his staff from being shipped to the death camps. Soon Schindler demands more workers and starts bribing Nazi leaders to keep Jews on his employee lists and out of the camps. By the time Germany falls to the allies, Schindler has lost his entire fortune -- and saved 1,100 people from likely death. Schindler''s List was nominated for 12 Academy Awards and won seven, including Best Picture and a long-coveted Best Director for Spielberg, and it quickly gained praise as one of the finest American movies about the Holocaust.',
+  'R', 8,3.99, 7,2.99, 'Steven', 'Spielberg',
+  'Liam', 'Neeson',
+  'Ben', 'Kingsley',
+  'Ralph', 'Fiennes',
+  'Drama'
+
+--Works, uses existing director, 2 existing actors, 1 new actor, new genre
+EXECUTE AddMovie
+  'Saving Private Ryan',
+  'Steven Spielberg directed this powerful, realistic re-creation of WWII''s D-day invasion and the immediate aftermath. The story opens with a prologue in which a veteran brings his family to the American cemetery at Normandy, and a flashback then joins Capt. John Miller (Tom Hanks) and GIs in a landing craft making the June 6, 1944, approach to Omaha Beach to face devastating German artillery fire. This mass slaughter of American soldiers is depicted in a compelling, unforgettable 24-minute sequence. Miller''s men slowly move forward to finally take a concrete pillbox. On the beach littered with bodies is one with the name "Ryan" stenciled on his backpack. Army Chief of Staff Gen. George C. Marshall (Harve Presnell), learning that three Ryan brothers from the same family have all been killed in a single week, requests that the surviving brother, Pvt. James Ryan (Matt Damon), be located and brought back to the United States. Capt. Miller gets the assignment, and he chooses a translator, Cpl. Upham (Jeremy Davis), skilled in language but not in combat, to join his squad of right-hand man Sgt. Horvath (Tom Sizemore), plus privates Mellish (Adam Goldberg), Medic Wade (Giovanni Ribisi), cynical Reiben (Edward Burns) from Brooklyn, Italian-American Caparzo (Vin Diesel), and religious Southerner Jackson (Barry Pepper), an ace sharpshooter who calls on the Lord while taking aim. Having previously experienced action in Italy and North Africa, the close-knit squad sets out through areas still thick with Nazis. After they lose one man in a skirmish at a bombed village, some in the group begin to question the logic of losing more lives to save a single soldier. The film''s historical consultant is Stephen E. Ambrose, and the incident is based on a true occurance in Ambrose''s 1994 bestseller D-Day: June 6, 1944.',
+  'R', 16, 4.99, 14, 3.99, 'Steven', 'Spielberg',
+  'Tom', 'Hanks',
+  'Matt', 'Damon',
+  'Edward', 'Burns',
+  'War'
+
+
+
+--Once the procedure is working correctly, insert two additional movies  
+--  that produce no errors
+--Please use actual movie/director/actor/genre data. You can find this information on the
+--  web at sites like https://www.allmovie.com/
+--You can use movie details entered in previous homework if you want
+
+
+EXECUTE AddMovie
+  '28 Weeks Later',
+  '28 Weeks Later is a 2007 science fiction horror film co-written and directed by Juan Carlos Fresnadillo. A sequel to Danny Boyle''s 28 Days Later (2002), it stars Robert Carlyle, Rose Byrne, Jeremy Renner, Harold Perrineau, Catherine McCormack, Imogen Poots, and Idris Elba. The plot depicts the efforts of NATO military forces to salvage a safe zone in London following the events in 28 Days Later, the consequence of two young siblings breaking protocol to find their infected mother, and the resulting reintroduction of the highly contagious virus to the safe zone. It was released in the United Kingdom and United States on 11 May 2007.',
+  'R', 24, 6.25, 11, 2.75, 'Juan', 'Fresnadillo',
+  'Robert', 'Carlyle',
+  'Rose', 'Byrne',
+  'Jeremy', 'Renner',
+  'Horror'
+
+
+EXECUTE AddMovie
+  'Land of the Dead',
+  'Land of the Dead (also known as George A. Romero''s Land of the Dead) is a 2005 post-apocalyptic horror film written and directed by George A. Romero; the fourth of Romero''s six Living Dead movies, it is preceded by Night of the Living Dead, Dawn of the Dead and Day of the Dead, and succeeded by Diary of the Dead and Survival of the Dead.[3] It was released in 2005, with a budget of $15–19 million, the highest in Romero''s Dead series, and became a success, grossing over $46 million.[1][2]
+
+The story of Land of the Dead deals with a zombie assault on Pittsburgh, Pennsylvania, where a feudal-like government exists. The survivors in the film have fled to the Golden Triangle area of downtown Pittsburgh. The region is protected on two sides by rivers and on the third by an electric barricade that survivors term "the Throat". Released in North America on June 24, 2005, Land of the Dead received mostly positive reviews from film critics.',
+  'R', 24, 6.25, 11, 2.75, 'George', 'Romero',
+  'Simon', 'Baker',
+  'John', 'Leguizamo',
+  'Dennis', 'Hopper',
+  'Horror'

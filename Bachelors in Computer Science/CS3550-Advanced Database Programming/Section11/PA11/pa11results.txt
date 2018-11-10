@@ -1,0 +1,217 @@
+
+//Write a mongo command for each of the following
+
+
+//1. Set the mongo shell to use the zipcodes database
+
+switched to db zipcodes
+
+
+//2. List the document that has _id 84405. Make it pretty :)
+
+{
+        "_id" : "84405",
+        "city" : "OGDEN",
+        "loc" : [
+                -111.980945,
+                41.173928
+        ],
+        "pop" : 18982,
+        "state" : "UT"
+}
+
+
+//3. List all the documents with OGDEN as the city. 
+//   Make it pretty :)
+
+{
+        "_id" : "28405",
+        "city" : "OGDEN",
+        "loc" : [
+                -77.852937,
+                34.264065
+        ],
+        "pop" : 26744,
+        "state" : "NC"
+}
+{
+        "_id" : "50212",
+        "city" : "OGDEN",
+        "loc" : [
+                -94.006333,
+                42.035106
+        ],
+        "pop" : 3115,
+        "state" : "IA"
+}
+{
+        "_id" : "61859",
+        "city" : "OGDEN",
+        "loc" : [
+                -87.966499,
+                40.140117
+        ],
+        "pop" : 1397,
+        "state" : "IL"
+}
+{
+        "_id" : "66517",
+        "city" : "OGDEN",
+        "loc" : [
+                -96.700077,
+                39.119219
+        ],
+        "pop" : 2049,
+        "state" : "KS"
+}
+{
+        "_id" : "71853",
+        "city" : "OGDEN",
+        "loc" : [
+                -94.027826,
+                33.585706
+        ],
+        "pop" : 779,
+        "state" : "AR"
+}
+{
+        "_id" : "84401",
+        "city" : "OGDEN",
+        "loc" : [
+                -111.962121,
+                41.22148
+        ],
+        "pop" : 21276,
+        "state" : "UT"
+}
+{
+        "_id" : "84403",
+        "city" : "OGDEN",
+        "loc" : [
+                -111.948927,
+                41.189412
+        ],
+        "pop" : 28751,
+        "state" : "UT"
+}
+{
+        "_id" : "84404",
+        "city" : "OGDEN",
+        "loc" : [
+                -111.983686,
+                41.262727
+        ],
+        "pop" : 35790,
+        "state" : "UT"
+}
+{
+        "_id" : "84405",
+        "city" : "OGDEN",
+        "loc" : [
+                -111.980945,
+                41.173928
+        ],
+        "pop" : 18982,
+        "state" : "UT"
+}
+{
+        "_id" : "84414",
+        "city" : "OGDEN",
+        "loc" : [
+                -111.968924,
+                41.311201
+        ],
+        "pop" : 16891,
+        "state" : "UT"
+}
+
+
+//4. How many documents have the city OGDEN? 
+
+10
+
+
+//5. How many documents have the city OGDEN and the state UT. 
+//   When using two filters, separate them with a comma.
+
+5
+
+
+//6. List all the documents with the city OGDEN and the state UT. 
+//   Include only _id, city, and state.  
+
+{ "_id" : "84401", "city" : "OGDEN", "state" : "UT" }
+{ "_id" : "84403", "city" : "OGDEN", "state" : "UT" }
+{ "_id" : "84404", "city" : "OGDEN", "state" : "UT" }
+{ "_id" : "84405", "city" : "OGDEN", "state" : "UT" }
+{ "_id" : "84414", "city" : "OGDEN", "state" : "UT" }
+
+
+//7. List all the documents with the city OGDEN and the state UT. 
+//   Have the output exclude _id, city, and state.  
+
+{ "loc" : [ -111.962121, 41.22148 ], "pop" : 21276 }
+{ "loc" : [ -111.948927, 41.189412 ], "pop" : 28751 }
+{ "loc" : [ -111.983686, 41.262727 ], "pop" : 35790 }
+{ "loc" : [ -111.980945, 41.173928 ], "pop" : 18982 }
+{ "loc" : [ -111.968924, 41.311201 ], "pop" : 16891 }
+
+
+//8. How many zips have a latitude less than 20?
+//   The value for latitude is always the second element
+//   in the loc array. This element has an index of 1.
+//   To filter for a specific element in an array, add the
+//   index as part of the name and include quotes like this
+//     "loc.1"
+
+21
+
+
+//9. Update a document, set pop to 5287 for downtown Detroit
+//   which has a zip code of 48226. 
+//   tited Dv.
+
+WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+
+
+//10. Write a findOne command using the zip code to display 
+//    the updated document for downtown Detroit
+
+{
+        "_id" : "48226",
+        "city" : "DETROIT",
+        "loc" : [
+                -83.048432,
+                42.333346
+        ],
+        "pop" : 5287,
+        "state" : "MI"
+}
+
+
+//11. It turns out the zip code for WSU is not in the collection. 
+//    Use insertOne to add a document with all the standard 
+//    fields and an additional one for campus. Set the values
+//    of the fields to the actual values for 84408. It is in
+//    Ogden, UT with a population of 0, a longitude of -111.9484,
+//    a latitude of 41.1952, and set campus to WSU. Use all 
+//    caps for the city and state values.
+
+{ "acknowledged" : true, "insertedId" : "84408" }
+
+
+//12. Write a findOne command using the _id field that displays 
+//    the newly added document
+
+{
+        "_id" : "84408",
+        "city" : "OGDEN",
+        "loc" : [
+                -111.9484,
+                41.1952
+        ],
+        "pop" : 0,
+        "state" : "UT",
+        "campus" : "WSU"
+}
+

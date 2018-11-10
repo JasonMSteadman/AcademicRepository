@@ -1,0 +1,359 @@
+
+--Set Management Studio to use the StudentU2 database
+
+USE StudentU2
+
+
+--List all the users in the database
+--Include User first and last name
+
+SELECT FirstName, LastName
+	FROM User1;
+
+
+--Which users have the first name John?
+--Include User first and last name
+
+SELECT FirstName, LastName
+	FROM User1
+	WHERE FirstName = 'John';
+
+
+--Which users are students? Use IN
+--Include User first and last name
+
+SELECT FirstName, LastName
+	FROM User1
+	WHERE UserType IN( 'S', 'IS', 'AS', 'AIS');
+
+
+--Which users are students? Use LIKE
+--Include User first and last name
+
+SELECT FirstName, LastName, UserType
+	FROM User1
+	WHERE UserType LIKE ('%S');
+
+
+--Which users are Computer Science majors? 
+--Include User first, last name, and user type
+
+SELECT FirstName, LastName, UserType
+	FROM User1
+	WHERE Major = 'Computer Science';
+
+
+--Which users are not Computer Science majors?  
+--Include User first, last name, and user type
+
+SELECT FirstName, LastName, UserType
+	FROM User1
+	WHERE NOT Major = 'Computer Science'
+	OR Major IS NULL;
+
+
+--Which users have no department and no major?  
+--Include User first, last name, and user type
+
+SELECT FirstName, LastName, UserType
+	FROM User1
+	WHERE Major IS NULL AND Department IS NULL;
+
+
+--Which grades have been awarded?
+--Include grade with no duplication
+
+SELECT Grade	
+	FROM Registration
+	GROUP BY GRADE;
+
+
+--How many of each grade have been awarded?
+--Include grade with no duplication
+
+SELECT Grade, COUNT(*)	
+	FROM Registration
+	GROUP BY GRADE;
+
+
+--What location is each section taught in?
+--Include  Course department and course number, Section semester and year,
+--    and Location building and room number
+
+SELECT Department, CourseNumber,
+	Semester, Year, Building, RoomNumber
+	FROM Section JOIN Location	
+		ON Section.Location = Location.LocationId
+		JOIN Course
+		ON Course.CourseId = Section.Course;
+
+
+--Which students have taken course 2? List students in order by last name
+--Include User first and last name
+
+SELECT FirstName, LastName
+	FROM User1 JOIN Registration
+	ON User1.UserId = Registration.UserId
+	JOIN Section
+	ON Section.SectionNumber = Registration.SectionNumber
+	WHERE Course = 2
+	ORDER BY LastName;
+
+
+--List all the grades in the database, order by section number
+--Include Course department and number, Section semester and year, and grade
+
+SELECT Department, CourseNumber, Semester, Year, Grade
+	FROM Course JOIN Section
+	ON Course.CourseId = Section.Course
+	JOIN Registration
+	ON Registration.SectionNumber = Section.SectionNumber
+	ORDER BY Section.SectionNumber;
+
+
+--Which instructors still have grades to submit? List in order by 
+--  last name and then department
+--Include instructor first and last name, course department and number, 
+--  section semester and year, and grade (will be NULL)
+
+SELECT DISTINCT FirstName, LastName, Course.Department,
+	CourseNumber, Semester, Year, Grade
+	FROM Course JOIN Section
+	ON Course.CourseId = Section.Course
+	JOIN Registration
+	ON Section.SectionNumber = Registration.SectionNumber
+	JOIN User1
+	ON User1.UserId = Section.Instructor
+	WHERE Grade IS NULL;
+
+
+--Insert the following into the User1 table
+--  2 students
+--  1 instructors
+--  1 admins
+--  1 instructor/student
+--  1 instructor/admin
+--  1 admin/student
+--  1 admin/instructor/student
+
+INSERT INTO User1 VALUES ('SU1548965', 'Jim', 'Bob', 'asdwe', 'S', NULL, 
+'Computer Scienc');
+
+INSERT INTO User1 VALUES ('SU1153489', 'Might', 'Guy', 'PowerOfYouth', 'S', NULL, 
+'Math');
+
+INSERT INTO User1 VALUES ('SU5986479', 'Anna', 'Sim', 'drowssap', 'I', 'CS', 
+NULL);
+
+INSERT INTO User1 VALUES ('SU5986478', 'Jenny', 'Willson', 'password', 'A', NULL, 
+NULL);
+
+INSERT INTO User1 VALUES ('SU5985578', 'Mike', 'Tom', 'passwordbackwards', 'IS', 'MATH', 
+'Networking');
+
+INSERT INTO User1 VALUES ('SU1236479', 'Tim', 'Timinson', 'nope', 'IA', 'CS', 
+NULL);
+
+INSERT INTO User1 VALUES ('SU1246479', 'Lisa', 'Simer', 'somepassword', 'AS', NULL, 
+'Art History');
+
+INSERT INTO User1 VALUES ('SU5985769', 'Frank', 'Castle', 'Punisher', 'AIS', 'ART', 
+'Business Management');
+
+
+--List all the users that are students, use LIKE
+-- Include User first name, user type, department, and major
+
+SELECT FirstName, UserType, Department, Major
+	FROM User1
+	WHERE UserType LIKE ('%S');
+
+
+--List all the users that are instructors, use LIKE
+-- Include User first name, user type, department, and major
+
+SELECT FirstName, UserType, Department, Major
+	FROM User1
+	WHERE UserType LIKE ('%I%');
+
+
+--List all the users that have no department and no major?  
+--Include User first, last name, and user type
+
+SELECT FirstName, LastName, UserType	
+	FROM User1
+	WHERE Department IS NULL
+	AND Major IS NULL;
+
+
+--Insert the following into the PhoneNumber table 
+--  1-2 Phone numbers per user you inserted, total of 12 phone number records
+
+INSERT INTO PhoneNumber VALUES ( '3214589687', 'SU1548965' );
+
+INSERT INTO PhoneNumber VALUES ( '8654752315', 'SU1548965' );
+
+INSERT INTO PhoneNumber VALUES ( '2651236459', 'SU1153489' );
+
+INSERT INTO PhoneNumber VALUES ( '2655944852', 'SU5986479' );
+
+INSERT INTO PhoneNumber VALUES ( '4563254158', 'SU5986479' );
+
+INSERT INTO PhoneNumber VALUES ( '3654789985', 'SU5986478' );
+
+INSERT INTO PhoneNumber VALUES ( '4568465489', 'SU5985578' );
+
+INSERT INTO PhoneNumber VALUES ( '1233211233', 'SU1236479' );
+
+INSERT INTO PhoneNumber VALUES ( '9658741025', 'SU1236479' );
+
+INSERT INTO PhoneNumber VALUES ( '1478523698', 'SU1246479' );
+
+INSERT INTO PhoneNumber VALUES ( '1234589657', 'SU1246479' );
+
+INSERT INTO PhoneNumber VALUES ( '1245832659', 'SU5985769' );
+
+
+--Insert the following into the Course table 
+--  2 courses
+
+INSERT INTO Course VALUES (2810, 'CS', 'Data Structures', 'Into to Data Structures.',
+4);
+
+INSERT INTO Course VALUES (3110, 'CS', 'Networking', 'Into to Networking.',
+4);
+
+
+--Insert the following into the Location table
+--  3 locations
+
+INSERT INTO Location VALUES ('ART', 555);
+
+INSERT INTO Location VALUES ('ENG', 777);
+
+INSERT INTO Location VALUES ('CS', 222);
+
+--Insert the following into the Section table 
+--  3 sections
+
+INSERT INTO Section VALUES ( 'SU5986479', '8', 'SP', 2018, 11);
+
+INSERT INTO Section VALUES ( 'SU5985578', '9', 'FA', 2018, 10);
+
+INSERT INTO Section VALUES ( 'SU1236479', '1', 'SU', 2018, 9);
+
+
+--Insert the following into the Registration table 
+--  6 with grades
+--  6 without grades
+
+INSERT INTO Registration VALUES ( 'SU1548965', 8, 'A');
+
+INSERT INTO Registration VALUES ( 'SU1153489', 8, 'B+');
+
+INSERT INTO Registration VALUES ( 'SU5985578', 8, 'D');
+
+INSERT INTO Registration VALUES ( 'SU1236479', 8, 'C-');
+
+INSERT INTO Registration VALUES ( 'SU1246479', 8, 'B');
+
+INSERT INTO Registration VALUES ( 'SU5985769', 8, 'E');
+
+
+INSERT INTO Registration VALUES ( 'SU1548965', 2, NULL);
+												  
+INSERT INTO Registration VALUES ( 'SU1153489', 5, NULL);
+												  
+INSERT INTO Registration VALUES ( 'SU5985578', 1, NULL);
+												  
+INSERT INTO Registration VALUES ( 'SU1236479', 6, NULL);
+												  
+INSERT INTO Registration VALUES ( 'SU1246479', 7, NULL);
+												  
+INSERT INTO Registration VALUES ( 'SU5985769', 2, NULL);
+
+
+--Insert the following into the Prerequisite table 
+--  2 prerequisite records
+
+INSERT INTO Prerequisite VALUES ( 8, 1 );
+
+INSERT INTO Prerequisite VALUES ( 9, 1 );
+
+
+-- Make the following three updates
+
+--Change last name of user 'SU8345902' to Williamson
+
+UPDATE User1
+	SET LastName = 'Williamson'
+	WHERE Userid = 'SU8345902';
+
+
+--Change user 'SU4309472'. They are a student and need to be changed to instructor. 
+--They will be in the department 'ENG'
+
+UPDATE User1
+	SET UserType = 'I',
+		Major = NULL,
+		Department = 'ENG'
+	WHERE UserId = 'SU4309472';
+	
+
+--Change the grade for student 'SU8948156' in section 4 from B+ to A-
+
+UPDATE Registration
+	SET Grade = 'A-'
+	WHERE UserId = 'SU8948156'
+	AND SectionNumber = 4;
+
+
+--Do the following two deletions 
+
+--Remove students with Art History major 
+--(Doesn't work. Show the delete from User1 command
+--Show the delete from PhoneNumber command
+--Do not delete from Regstration)
+--Note you might only have one student with this major. That one student is in 
+--the database already. The second one I inserted. Since you inserted different
+--values than I did, you might not have a second one.
+
+DELETE FROM PhoneNumber
+	WHERE Userid IN (
+			SELECT Userid 
+				FROM User1
+				WHERE Major = 'Art History');
+
+
+
+--Remove user Tim Hansen
+--Check to make sure there are no registration or section records before deleting
+--Include the queries for these checks. Use a SELECT statement in the 
+--WHERE clause. 
+--After the check, remove any phone number records
+--Then remove the Tim Hansen record
+
+SELECT *
+	FROM Registration
+	WHERE Userid IN (SELECT Userid
+						FROM User1
+						WHERE FirstName = 'Tim'
+						AND LastName = 'Hansen');
+
+SELECT *
+	FROM Section
+	WHERE Instructor IN (SELECT Userid
+						FROM User1
+						WHERE FirstName = 'Tim'
+						AND LastName = 'Hansen');
+
+
+DELETE FROM PhoneNumber
+	WHERE UserId IN (SELECT Userid
+					FROM User1
+					WHERE FirstName = 'Tim'
+					AND LastName = 'Hansen');
+
+DELETE FROM User1	
+	WHERE FirstName = 'Tim'
+	AND LastName = 'Hansen';

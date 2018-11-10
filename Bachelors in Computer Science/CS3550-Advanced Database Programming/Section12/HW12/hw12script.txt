@@ -1,0 +1,71 @@
+//Write the mongo commands to answer each of the following questions.
+//Database to use.
+use video
+
+//1. How many movie documents are in the collection?
+
+db.movieDetails.aggregate(
+	{$group: {_id: null, count: {$sum: 1}}}
+)
+
+//2. How many movies were produced each year?
+
+db.movieDetails.aggregate(
+	{$group: {_id: "$year", count: {$sum: 1}}}
+)
+
+//3. How many movies were produced each year?
+//   Sort by year with earliest year first
+
+db.movieDetails.aggregate(
+	{$group: {_id: "$year", count: {$sum: 1}}},
+	{$sort: {_id: 1}}
+)
+
+//4. How many different years are in the collection?
+
+
+db.movieDetails.aggregate(
+	{$group: {_id: "$year", total: {$sum: 1}}},
+	{$group: {_id: null, count: {$sum: 1}}}
+)
+
+//5. What was the average runtime of movies for each year?
+//   Sort by year with latest year first
+
+db.movieDetails.aggregate(
+	{$group: {_id: "$year", avgRuntime: {$avg: "$runtime"}}},
+	{$sort: {_id: -1}}
+)
+
+//6. Consider movies that have been filmed in the USA (in countries field), 
+//   since 2000 (including 2000). How many movies have been produced each 
+//   year? Sort by the count with the most first.
+
+db.movieDetails.aggregate(
+	{$match: {countries: "USA"}},
+	{$match: {year: {$gte: 2000}}},
+	{$group: {_id: "$year", count: {$sum: 1}}},
+	{$sort: {count: -1}}	
+)
+
+//7. Consider movies that have been filmed in the USA (in countries field), 
+//   since 2000 (including 2000). How many movies have been produced each 
+//   year and what is their average runtime? Sort by year with 2000 first.
+
+db.movieDetails.aggregate(
+	{$match: {countries: "USA"}},
+	{$match: {year: {$gte: 2000}}},
+	{$group: {_id: "$year", count: {$sum: 1}, avgRuntime: {$avg: "$runtime"}}},
+	{$sort: {_id: 1}}	
+)
+
+//8. Consider movies that have been directed by Steven Spielberg. How 
+//   many movies have been produced each year and what is their 
+//   average runtime? Sort by year with the most recent first.
+
+db.movieDetails.aggregate(
+	{$match: {director: {$regex : ".*Steven Spielberg.*"}}},
+	{$group: {_id: "$year", count: {$sum: 1}, avgRuntime: {$avg: "$runtime"}}},
+	{$sort: {_id: -1}}
+)

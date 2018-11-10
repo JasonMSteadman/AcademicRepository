@@ -1,0 +1,160 @@
+USE master
+DROP DATABASE IF EXISTS PurpleBoxDVD;
+
+CREATE DATABASE PurpleBoxDVD
+ON PRIMARY (
+	NAME = PurpleBoxDVD,
+	FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\PurpleBoxDVD.mdf',
+	SIZE = 5120KB,
+	FILEGROWTH = 1024Kb)
+LOG ON (
+	NAME = PurpleBoxDVD_loh,
+	FILENAME = 'C:\Program Files\Microsoft SQL Server\MSSQL14.SQLEXPRESS\MSSQL\DATA\PurpleBoxDVD_log.ldf',
+	SIZE = 2048KB,
+	FILEGROWTH = 10%);
+
+GO
+
+USE PurpleBoxDVD
+
+
+CREATE TABLE Customer (
+	CustomerId INT IDENTITY NOT NULL,
+	FirstName NVARCHAR(35) NOT NULL,
+	LastName NVARCHAR(35) NOT NULL,
+	Password NVARCHAR(128) NOT NULL,
+	Email NVARCHAR(255) NOT NULL,
+	IsBanned BIT NOT NULL DEFAULT 0,
+	UserType CHAR NOT NULL DEFAULT 'C'
+		CONSTRAINT checkUserType
+		CHECK (UserType IN('C', 'E', 'B')),
+	CustomerType CHAR NULL DEFAULT 'S'
+		CONSTRAINT checkCustomerType
+		CHECK (CustomerType IN ('S', 'P')),
+	CONSTRAINT pkCustomer PRIMARY KEY (CustomerId));
+
+
+CREATE TABLE PhoneNumber (
+	PhoneNumber CHAR(10) NOT NULL,
+	UserId INT NOT NULL,
+	CONSTRAINT pkPhoneNumber PRIMARY KEY (PhoneNumber, UserId),
+	CONSTRAINT fkPhoneNumber
+		FOREIGN KEY (UserId) REFERENCES Customer (CustomerId));
+
+
+CREATE TABLE Question (
+	QuestionId TINYINT IDENTITY NOT NULL,
+	Question VARCHAR(128) NOT NULL,
+	CONSTRAINT pkQuestion PRIMARY KEY (QuestionId));
+
+
+CREATE TABLE SecurityQuestion (
+	UserId INT NOT NULL,
+	QuestionId TINYINT NOT NULL,
+	Answer VARCHAR(64) NOT NULL,
+	CONSTRAINT pkSecurityQuestion PRIMARY KEY (UserId, QuestionId),
+	CONSTRAINT fkUserIdInSecurityQuestion
+		FOREIGN KEY (UserId) REFERENCES Customer (CustomerId),
+	CONSTRAINT fkQuestionIdInSecurityQuestion
+		FOREIGN KEY (QuestionId) REFERENCES Question (QuestionId));
+
+
+CREATE TABLE Movie (
+	MovieId INT IDENTITY NOT NULL,
+	Title NVARCHAR(128) NOT NULL,
+	Description NVARCHAR(1028) NOT NULL,
+	MpaaRating VARCHAR(5) NULL
+		CONSTRAINT checkMpaaRating 
+		CHECK (MpaaRating IN ('G','PG','PG-13','R','NC-17')),
+	CONSTRAINT pkMoive PRIMARY KEY (MovieId));
+
+
+CREATE TABLE MovieItem (
+	MovieItemId INT IDENTITY NOT NULL,
+	Type CHAR NOT NULL
+		CONSTRAINT checkType
+		CHECK (type IN('B', 'D')),
+	RentalFee SMALLMONEY NOT NULL,
+	MovieId INT NOT NULL,
+	CONSTRAINT pkMovieItem PRIMARY KEY (MovieItemId),
+	CONSTRAINT fkMovieIdInMovieItem
+		FOREIGN KEY (MovieId) REFERENCES Movie (MovieId));
+
+
+CREATE TABLE Rental (
+	RentalId INT IDENTITY NOT NULL,
+	CustomerId INT NOT NULL,
+	MovieItemId INT NOT NULL,
+	RentalDate SMALLDATETIME NOT NULL,
+	ReturnDate SMALLDATETIME NULL DEFAULT NULL,
+	CONSTRAINT pkRental PRIMARY KEY (RentalId),
+	CONSTRAINT fkCustomerIdInRental 
+		FOREIGN KEY (CustomerId) REFERENCES Customer (CustomerId),
+	CONSTRAINT pkMovieItemIdInRental
+		FOREIGN KEY (MovieItemId) REFERENCES MovieItem (MovieItemId));
+
+
+CREATE TABLE OverdueFee (
+	RentalId INT NOT NULL,
+	CONSTRAINT pkOverdueFee PRIMARY KEY (RentalId),
+	CONSTRAINT fkOverdueFee
+		FOREIGN KEY (RentalId) REFERENCES Rental (RentalId));
+
+
+CREATE TABLE Reservation (
+	ReservationId INT IDENTITY NOT NULL,
+	CustomerId INT NOT NULL,
+	MovieId INT NOT NULL,
+	Type CHAR NOT NULL
+		CONSTRAINT checkTypeReservation
+		CHECK (Type IN('B', 'D')),
+	CONSTRAINT pkReservation PRIMARY KEY (ReservationId),
+	CONSTRAINT fkCustomerIdInReservation
+		FOREIGN KEY (CustomerId) REFERENCES Customer (CustomerId),
+	CONSTRAINT fkMovieIdInReservation
+		FOREIGN KEY (MovieId) REFERENCES Movie (MovieId));
+
+
+CREATE TABLE Actor (
+	ActorId INT IDENTITY NOT NULL,
+	CONSTRAINT pkActor PRIMARY KEY (ActorId));
+
+
+CREATE TABLE Director (
+	DirectorId INT IDENTITY NOT NULL,
+	CONSTRAINT pkDirector PRIMARY KEY (DirectorId));
+
+
+CREATE TABLE Genre (
+	GenreName VARCHAR(12) NOT NULL,
+	CONSTRAINT pkGenre PRIMARY KEY (GenreName));
+
+
+CREATE TABLE MovieActor (
+	MovieId INT NOT NULL,
+	ActorId INT NOT NULL,
+	CONSTRAINT pkMovieActor PRIMARY KEY (MovieId, ActorId),
+	CONSTRAINT fkMovieIdInMoveActor
+		FOREIGN KEY (MovieId) REFERENCES Movie (MovieId),
+	CONSTRAINT fkActorIdInMovieActor 
+		FOREIGN KEY (ActorId) REFERENCES Actor (ActorId));
+
+
+CREATE TABLE MovieDirector (
+	MovieId INT NOT NULL,
+	DirectorId INT NOT NULL,
+	CONSTRAINT pkMovieDirector PRIMARY KEY (MovieId, DirectorId),
+	CONSTRAINT fkMovieIdInMovieDirector
+		FOREIGN KEY (MovieId) REFERENCES Movie (MovieId),
+	CONSTRAINT fkDirectorIdInMovieDirector
+		FOREIGN KEY (DirectorId) REFERENCES Director (DirectorId));
+
+
+CREATE TABLE MovieGenre (
+	MovieId INT NOT NULL,
+	GenreName VARCHAR(12) NOT NULL,
+	CONSTRAINT pkMovieGenre PRIMARY KEY (MovieId, GenreName),
+	CONSTRAINT fkMovieIdInMovieGenre
+		FOREIGN KEY (MovieId) REFERENCES Movie (MovieId),
+	CONSTRAINT fkGenreNameInMovieGenre
+		FOREIGN KEY (GenreName) REFERENCES Genre (GenreName));

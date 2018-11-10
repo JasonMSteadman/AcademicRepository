@@ -1,0 +1,366 @@
+
+--****************Test Data*********************************
+
+USE WellMoneyTest
+GO
+
+--The following queries are designed to find problem cases in the data. The 
+--  results returned will be where the data does not follow the specifications in 
+--  the scenario.
+
+
+
+--Write a query to find any employee only users that have a customer type  
+--  that is not NULL. 
+-- Include user id, first name, last name, user type, and customer type
+
+
+SELECT UserId, FirstName, LastName, UserType, CustomerType
+	FROM User1
+	WHERE UserType = 'E'
+		AND CustomerType IS NOT NULL;
+
+
+--Write a query to find any customer that is not designated as a standard or
+--  premium customer   
+-- Include user id, first name, last name, user type, and customer type
+
+SELECT UserId, FirstName, LastName, UserType, CustomerType
+	FROM User1
+	WHERE UserType IN ('C', 'B')
+		AND CustomerType IS NULL;
+
+ 
+--Write a query that finds any users without a phone number
+--Include user id, first name, last name
+
+SELECT UserId, FirstName, LastName
+	FROM User1
+	WHERE UserId NOT IN	(SELECT UserId
+							FROM PhoneNumber);
+
+
+--Write a query that finds any users the don't have exactly two security questions,
+--  including those with no questions
+--Include user id, first name, last name, and the number of questions they have (or
+--  NULL if they have none)
+
+SELECT User1.UserId, FirstName, LastName, 
+	CASE
+		WHEN User1.UserId NOT IN (	SELECT UserId
+							FROM SecurityQuestion) THEN NULL
+		ELSE COUNT(*)
+	END AS 'Number Of Questions'
+	FROM User1 LEFT JOIN SecurityQuestion
+		ON User1.UserId = SecurityQuestion.UserId		 
+	GROUP BY User1.UserId, FirstName, LastName
+	HAVING COUNT(*) <> 2;
+
+
+--****************Add User*********************************
+
+
+USE WellMoney2;
+GO
+
+
+--DROP the following procedure if it exists
+
+
+
+
+--Create a Procedure to insert a new User
+--Parameters include: user type, first name, last name, password, email,  
+--  customer type, phone number, 1st question id, 1st answer,  
+--  2nd question id, 2nd answer
+--Test that user type and customer type are an allowed combination
+--   If not valid, print specific error and end procedure
+--Test that the security question ids are not the same
+--   If both are the same question, print specific error and end procedure
+--Add one complete user entry
+--  Let the DBMS add the IDENTITY value for UserId 
+--  Then use that UserId value when adding the following 
+--Add one phone number record
+--Add two security question records
+
+--USE a TRY CATCH block with BEGIN TRANSACTION, COMMIT TRANSACTION, and 
+--ROLLBACK to make sure none of the INSERTs happen unless they all work.
+--If they work, print a message about user added successfully, include user id
+--If they don't work, print error message about user was not added
+
+
+USE WellMoney2
+
+DROP PROCEDURE IF EXISTS AddUser
+GO
+
+CREATE PROCEDURE AddUser (
+	@UserType CHAR,
+	@FirstName NVARCHAR(35),
+	@LastName NVARCHAR(35),
+	@Password NVARCHAR(128),
+	@Email NVARCHAR(255),
+	@CustomerType CHAR,
+	@PhoneNumber CHAR(10),
+	@FirstQuestionId INT,
+	@FirstAnswer VARCHAR(64),
+	@SecondQuestionId INT,
+	@SecondAnswer VARCHAR(64) )
+
+	AS
+		IF @UserType IN ('C', 'B') AND @CustomerType IS NULL
+			BEGIN
+				PRINT 'Error! A Customer type user must have a CustomerType.'
+				RETURN
+			END
+		IF @UserType = 'E' AND @CustomerType IS NOT NULL
+			BEGIN
+				PRINT 'Error! An Employer UserType can not have CustomerType.'
+				RETURN
+			END
+		IF @FirstQuestionId = @SecondQuestionId
+			BEGIN
+				PRINT 'Error! Must use different security questions.'
+				RETURN
+			END
+
+		BEGIN TRY
+			BEGIN TRANSACTION
+				INSERT INTO User1 VALUES ( 
+				@UserType, 
+				@FirstName,
+				@LastName,
+				@Password,
+				@Email,
+				@CustomerType );
+				
+				DECLARE @UserId INT
+				SET @UserId = ((SELECT TOP 1 UserId
+									FROM User1
+								ORDER BY UserId DESC));
+
+				INSERT INTO PhoneNumber VALUES (@PhoneNumber, @UserId);
+
+				INSERT INTO SecurityQuestion VALUES (@UserId, @FirstQuestionId, @FirstAnswer);
+
+				INSERT INTO SecurityQuestion VALUES (@UserId, @SecondQuestionId, @SecondAnswer);
+
+			COMMIT TRANSACTION
+			PRINT 'New User Added ' + CAST(@UserId AS CHAR);
+		END TRY
+		BEGIN CATCH
+			ROLLBACK
+			PRINT 'An error occured.  User was not added the the database'
+		END CATCH
+
+GO
+
+
+--Add GO to end the procedure
+
+
+
+
+
+--You can execute the following statements to test the previous procedure
+--Some will produce errors and three will result in additions to 
+--  the User1 table
+
+
+--Works
+EXECUTE AddUser 
+  'E', 'Mary Ann', 'Wiliams', '3se(kdfwOOT', 'mary.ann@gmail.com', NULL, 
+  '4356830298', 2, 'Wispy',  5, 'Howdy'
+
+--Incorrect User/Customer type combination
+EXECUTE AddUser 
+  'E', 'Fred', 'Waters', 'Ldo^&53', 'fredwat2@gmail.com', 'S', 
+  '8013549723', 5, 'Dot',  3, 'Lincoln' 
+
+--Same question number
+EXECUTE AddUser 
+  'C', 'Heidi', 'Miller', 'KImd749%%', 'himil@aol.com', 'P',
+  '8016549321', 4, 'Washington',  4, 'Obama' 
+
+--Works
+EXECUTE AddUser 
+  'B', 'Sarah', 'Hill', 'fkie843&^', 'down.hill@work.net', 'P',
+  '9726598764', 7, 'Space',  2, 'Inside High' 
+
+--Incorrect question number, system produces error
+EXECUTE AddUser 
+  'C', 'Marty', 'Heinric', 'kfi!3485', 'marty.hein@hotmail.com', 'S',
+  '2086496598', 6, 'Las Vegas',  119, 'Outside High' 
+
+--Works
+EXECUTE AddUser 
+  'C', 'Bart', 'Benson', 'vkod96&2', 'ben.art@gmail.com', 'S',
+  '2086983814', 5, 'Reynold',  1, 'Buster'
+
+
+--Once the procedure is working correctly, insert two additional users  
+--  that produce no errors
+
+EXECUTE AddUser 
+  'E', 'Some', 'Guy', 'sad42', 'nopenope@gmail.com', NULL,
+  '3215689562', 7, 'meh',  2, 'mehHarder'
+
+EXECUTE AddUser 
+  'B', 'Some', 'Girl', 'happy42', 'yepyep@gmail.com', 'P',
+  '5986547510', 4, 'yay',  6, 'yayHarder'
+
+
+
+
+ 
+ --****************Add an Account*********************************
+
+
+USE WellMoney2;
+GO
+
+
+--DROP the following procedure if it exists
+
+
+
+
+
+
+ --Create a Procedure to insert a new Account
+--Parameters include: account type, main branch, service fee, customer first name, customer last name, deposit amount
+--Find the user id using the *first name and *last name
+--   If there is not a customer with that name, print specific error and end procedure
+--Test that user is a customer
+--   If not, print specific error and end procedure
+--Test if premium customer, the service fee is $0 --------------------------------------------------------
+--   If not, print specific error and end procedure
+--Add one Account entry
+--  Let the DBMS add the IDENTITY value for the AccountNumber 
+--  Then use that AccountNumber value when adding the following 
+--  Set the balance to $0 (this is the starting balance before deposit transaction is recorded.
+--Add one UserAccount record
+--Add one deposit transaction, use the GETDATE() function to set the date
+--  NOTE: the date type has been changed to DATETIME
+--  (We will not be updating the account balance in this activity.)
+
+--USE a TRY CATCH block with BEGIN TRANSACTION, COMMIT TRANSACTION, and 
+--ROLLBACK to make sure none of the INSERTs happen unless they all work.
+--If they work, print a message about account added successfully, include account number
+--If they don't work, print error message about account was not added
+
+--*Using first and last name is a simplification. There would need to be another detail
+--  such as birthdate or SSN to find a specific user
+--Can use TOP 1 to ensure you only get one id selected
+
+
+USE WellMoney2
+
+DROP PROCEDURE IF EXISTS AddAccount
+GO
+
+	CREATE PROCEDURE AddAccount(
+	@AccountType CHAR,
+	@MainBranch SMALLINT,
+	@ServiceFee SMALLMONEY,
+	@FirstName NVARCHAR(35),
+	@LastName NVARCHAR(35),
+	@DepositAmount MONEY)
+
+	AS
+		
+		DECLARE @UserId INT,
+				@CustomerType CHAR,
+				@AccountNumber INT
+		
+		SET @UserId = (	SELECT Userid
+							FROM User1
+						WHERE FirstName = @FirstName
+							AND LastName = @LastName)
+
+		SET @CustomerType = (	SELECT CustomerType
+									FROM User1
+								WHERE UserId = @UserId)
+
+		IF @UserId IS NULL
+		BEGIN 
+			PRINT 'Error!  User does not exist.'
+			RETURN
+		END
+
+		IF @UserId NOT IN (	SELECT UserId
+								FROM User1
+							WHERE UserType IN ('B', 'C'))
+		BEGIN
+			PRINT 'Error!  The user is not a customer.'
+			RETURN
+		END
+
+		IF @CustomerType = 'P'
+			AND	@ServiceFee <> 0
+		BEGIN
+			PRINT 'Error!  A premium customer cannot have a service fee.'
+			RETURN
+		END
+
+		BEGIN TRY
+			BEGIN TRANSACTION
+				INSERT INTO Account VALUES (@AccountType, 1,
+											@ServiceFee, 0);
+
+				SET @AccountNumber = (	SELECT TOP 1 AccountNumber
+											FROM Account
+											ORDER BY AccountNumber DESC);
+
+				INSERT INTO UserAccount VALUES (@UserId, @AccountNumber);
+
+				INSERT INTO Transaction1 VALUES ('D', @AccountNumber, @DepositAmount, GETDATE());
+										
+			COMMIT TRANSACTION
+		END TRY
+		BEGIN CATCH
+			ROLLBACK
+			PRINT 'An error has occured.  The account was not added to the database.'
+		END CATCH
+
+GO		
+
+
+
+--Add GO to end the procedure
+
+
+
+
+--You can execute the following statements to test the previous procedure
+--Some produce errors and some work
+
+
+--Works
+Execute AddAccount  'S', 2, 5.00, 'Tim', 'Scott', 318.00
+
+--Error, User not in data
+Execute AddAccount  'S', 2, 5.00, 'Henry', 'Buttars', 65.00
+
+--Error, User is employee only
+Execute AddAccount  'S', 1, 5.00, 'Carol', 'Strong', 1658.00
+
+--Error, premium customer is to have a service fee of $0
+Execute AddAccount  'C', 3, 5.00, 'Sarah', 'Hill', 1254.00
+
+--Works
+Execute AddAccount  'S', 2, 0, 'John', 'Jones', 800.00
+
+--Works
+Execute AddAccount  'C', 2, 5.00, 'Lilly', 'Smith', 2550.00
+
+
+--Once the procedure is working correctly, insert two additional accounts  
+--  that produce no errors
+
+Execute AddAccount  'S', 3, 6.25, 'Manuel', 'Sanchez', 555.26
+
+Execute AddAccount  'S', 1, 0, 'Sarah', 'Hill', 950.25
+
+
+
