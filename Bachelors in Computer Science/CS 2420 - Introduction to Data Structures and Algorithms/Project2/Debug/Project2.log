@@ -1,0 +1,28 @@
+﻿  Linked List Methods fall 2017.cpp
+c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(377): warning C4101: 'error': unreferenced local variable
+c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(385): warning C4101: 'error': unreferenced local variable
+c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(432): warning C4101: 'error': unreferenced local variable
+c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(440): warning C4101: 'error': unreferenced local variable
+c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(148): warning C4018: '<': signed/unsigned mismatch
+  c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(147): note: while compiling class template member function 'int SinglyLinkedList<int>::getAtIndex(const unsigned int) const'
+  c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(360): note: see reference to function template instantiation 'int SinglyLinkedList<int>::getAtIndex(const unsigned int) const' being compiled
+  c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(351): note: see reference to class template instantiation 'SinglyLinkedList<int>' being compiled
+c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(164): warning C4018: '<': signed/unsigned mismatch
+  c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(163): note: while compiling class template member function 'int &SinglyLinkedList<int>::operator [](const unsigned int)'
+  c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(410): note: see reference to function template instantiation 'int &SinglyLinkedList<int>::operator [](const unsigned int)' being compiled
+c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(186): warning C4018: '<=': signed/unsigned mismatch
+  c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(179): note: while compiling class template member function 'void SinglyLinkedList<int>::insertAtIndex(const unsigned int,const T &)'
+          with
+          [
+              T=int
+          ]
+  c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(457): note: see reference to function template instantiation 'void SinglyLinkedList<int>::insertAtIndex(const unsigned int,const T &)' being compiled
+          with
+          [
+              T=int
+          ]
+c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(207): warning C4018: '<': signed/unsigned mismatch
+  c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(206): note: while compiling class template member function 'void SinglyLinkedList<int>::deleteAtIndex(const unsigned int)'
+  c:\users\jason\documents\visual studio 2017\projects\cs2420\project2\linked list methods fall 2017.cpp(494): note: see reference to function template instantiation 'void SinglyLinkedList<int>::deleteAtIndex(const unsigned int)' being compiled
+  Project2.vcxproj -> C:\Users\jason\documents\visual studio 2017\Projects\CS2420\Debug\Project2.exe
+  Project2.vcxproj -> C:\Users\jason\documents\visual studio 2017\Projects\CS2420\Debug\Project2.pdb (Partial PDB)

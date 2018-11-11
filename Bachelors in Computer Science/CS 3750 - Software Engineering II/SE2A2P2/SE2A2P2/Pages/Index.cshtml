@@ -1,0 +1,50 @@
+﻿@page
+<div class="container">
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-6">&nbsp;</div>
+        <div class="col-6">
+            <div id="piechart"></div>
+            <br />
+            <br />
+            <h1>How many jobs have you had in the last year?</h1>
+            <form>
+                <input type="radio" name="jobs" value="1" onclick="poll(1)" />    One Job<br />
+                <input type="radio" name="jobs" value="2" onclick="poll(2)" />    Two Job<br />
+                <input type="radio" name="jobs" value="3" onclick="poll(3)" />    Three Job<br />
+                <input type="radio" name="jobs" value="4" onclick="poll(4)" />    More Job<br />
+            </form>
+            <input type="button" id="sendButton" value="Submit Answer" />
+
+            <!--
+    User..........<input type="text" id="userInput" />
+    <br />
+    Message...<input type="text" id="messageInput" />
+    <input type="button" id="sendButton" value="Send Message" /> -->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <hr />
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6">&nbsp;</div>
+        <div class="col-6">
+            <ul id="messagesList"></ul>
+        </div>
+    </div>
+</div>
+<script src="~/lib/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/chat.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="~/js/index.js"></script>
+<script>
+    var pick;
+
+    function poll(value) {
+        pick = value;
+    }
+</script>
+
+

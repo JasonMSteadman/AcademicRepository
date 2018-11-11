@@ -1,0 +1,8 @@
+﻿  Stacks And Queues Fall 2017.cpp
+c:\users\jason\documents\visual studio 2017\projects\proj1\stacks and queues fall 2017.cpp(236): warning C4101: 'e': unreferenced local variable
+c:\users\jason\documents\visual studio 2017\projects\proj1\stacks and queues fall 2017.cpp(267): warning C4101: 'e': unreferenced local variable
+c:\users\jason\documents\visual studio 2017\projects\proj1\stacks and queues fall 2017.cpp(324): warning C4101: 'e': unreferenced local variable
+c:\users\jason\documents\visual studio 2017\projects\proj1\stacks and queues fall 2017.cpp(352): warning C4101: 'e': unreferenced local variable
+c:\users\jason\documents\visual studio 2017\projects\proj1\stacks and queues fall 2017.cpp(376): warning C4101: 'e': unreferenced local variable
+  Proj1.vcxproj -> C:\Users\jason\documents\visual studio 2017\Projects\CS2420\Debug\Proj1.exe
+  Proj1.vcxproj -> C:\Users\jason\documents\visual studio 2017\Projects\CS2420\Debug\Proj1.pdb (Partial PDB)

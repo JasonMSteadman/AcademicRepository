@@ -1,0 +1,14 @@
+﻿  Bucket Sort C++11 fall 2017.cpp
+Bucket Sort C++11 fall 2017.cpp(111): warning C4018: '<': signed/unsigned mismatch
+Bucket Sort C++11 fall 2017.cpp(179): warning C4018: '<': signed/unsigned mismatch
+Bucket Sort C++11 fall 2017.cpp(284): warning C4477: 'printf' : format string '%d' requires an argument of type 'int', but variadic argument 1 has type 'const char *'
+Bucket Sort C++11 fall 2017.cpp(284): warning C4474: 'printf' : too many arguments passed for format string
+  Bucket Sort C++11 fall 2017.cpp(284): note: placeholders and their parameters expect 4 variadic arguments, but 5 were provided
+Bucket Sort C++11 fall 2017.cpp(297): warning C4474: 'printf' : too many arguments passed for format string
+  Bucket Sort C++11 fall 2017.cpp(297): note: placeholders and their parameters expect 0 variadic arguments, but 1 were provided
+  Generating code
+  0 of 415 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  Project5.vcxproj -> C:\Users\jason\documents\visual studio 2017\Projects\CS2420\Release\Project5.exe

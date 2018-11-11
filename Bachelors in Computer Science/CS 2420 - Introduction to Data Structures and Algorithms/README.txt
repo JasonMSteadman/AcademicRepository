@@ -1,0 +1,1 @@
+In this class the teacher setup a good portion of the programs.  He was more focused on us building the parts that dealt with theory.

@@ -1,0 +1,318 @@
+TITLE CS2810 Assembler Template
+
+; Student Name:  Jason Steadman
+; Assignment Due Date:  10/18/2017
+
+INCLUDE Irvine32.inc
+.data
+	;--------- Enter Data Here
+	vSemester byte "CS2810 Fall Semester 2017", 0
+	vProject byte "Assembler Assignment #3", 0
+	vName byte "Jason Steadman", 0
+	vPrompt byte "Please enter a MP3 frame header in hex format:  ",0
+
+	;-----Versions-----
+	vMPEG1 byte  "MPEG Version 1.0",0
+	vMPEG20 byte "MPEG Version 2.0",0
+	vMPEG25 byte "MPEG Version 2.5",0
+	vMPEGRE byte "MPEG Version is Reserved",0
+	VVersion byte " ",0
+	;-----Layers-----
+	vL1 byte "Layer I",0
+	vL2 byte "Layer II",0
+	vL3 byte "Layer III",0
+	vLR byte "Layer is Reserved",0
+
+	;-----Sampling Rate frequency index----
+
+	vS10 byte "44100 Hz",0
+	vS11 byte "48000 Hz",0
+	vS12 byte "32000 Hz",0
+	vS20 byte "22050 Hz",0
+	vS21 byte "24000 Hz",0
+	vS22 byte "16000 Hz",0
+	vS30 byte "11025 Hz",0
+	vS31 byte "12000 Hz",0
+	vS32 byte "8000 Hz",0
+	vSRE byte "Sample is Reserved"
+
+
+	;Need a 0 to terminate, like C-strings
+.code
+main PROC
+	;--------- Enter Code Below Here
+
+	call clrscr
+	call Heading
+	call Prompt
+	call Version
+	call Layer
+	call SampleRate
+	
+
+	call TheEnd
+
+
+
+	Heading:
+		mov dh, 10		;Row
+		mov dl, 12		;column
+		call gotoxy
+	
+		mov EDX, offset vSemester		;offset means an address
+		call writestring
+
+		;--Project--
+		mov dh, 11
+		mov dl, 12
+		call gotoxy
+		mov EDX, offset vProject
+		call writestring
+
+		;--Name--
+		mov dh, 12
+		mov dl, 12
+		call gotoxy
+		mov EDX, offset vName
+		call writestring
+
+		ret
+
+	Prompt:
+		mov dh, 13
+		mov dl, 12
+		call gotoxy
+		mov EDX, offset vPrompt
+		call writestring
+
+		mov dh, 14
+		mov dl, 12
+		call gotoxy
+		call readhex		;Get user input
+		mov ecx, eax		;Copy ax
+
+		ret
+
+	Version:
+
+		mov dh, 15
+		mov dl, 12
+
+		call gotoxy
+		;---Find version---
+		shr eax, 19
+		and eax, 3h
+
+		;---Check version---
+		cmp eax, 00b
+		jz dMPEG25
+
+		cmp eax, 01b
+		jz dMPEGRE
+
+		cmp eax, 10b
+		jz dMPEG20
+
+		mov edx, offset vMPEG1
+		jmp DisplayVersion
+
+		dMPEG25:
+			mov edx, offset vMPEG25
+			jmp DisplayVersion
+			ret
+
+		dMPEGRE:
+			mov edx, offset vMPEGRE
+			jmp DisplayVersion
+			ret
+
+		dMPEG20:
+			mov edx, offset vMPEG20
+			jmp DisplayVersion
+			ret
+
+		ret
+
+	DisplayVersion:
+		call writestring
+		mov word ptr vVersion, ax
+		ret
+
+	Layer:
+
+		mov dh, 16
+		mov dl, 12
+		call gotoxy
+
+		mov eax, ecx
+		
+		;---Find layer---
+		shr eax, 17
+		and eax, 3h
+
+		;---Check layer---
+
+		cmp eax, 00b
+		jz dReserved
+
+		cmp eax, 01b
+		jz dLayer3
+
+		cmp eax, 10b
+		jz dLayer2
+
+		mov edx, offset vL1
+		jmp DisplayLayer
+
+		dReserved:
+			mov edx, offset vLR
+			jmp DisplayLayer
+			ret
+
+		dLayer3:
+			mov edx, offset vL3
+			jmp DisplayLayer
+			ret
+
+		dLayer2:
+			mov edx, offset vL2
+			jmp DisplayLayer
+			ret
+
+		ret
+
+	DisplayLayer:
+		call writestring
+		ret
+
+	SampleRate:
+
+		mov dh, 17
+		mov dl, 12
+		call gotoxy
+
+		mov eax, ecx
+
+		shr eax, 12
+		and eax, 0Fh
+
+		cmp eax, 11b
+		jz SRE
+
+		;---Find version---
+		cmp vVersion, 00b
+		jz V25
+
+		;cmp vVersion, 01b
+		;jz VRE
+
+		cmp vVersion, 10b
+		jz V2
+
+		jmp V1
+
+		;---Find sampling rate---
+		V1:
+			cmp eax, 00b
+			jz V1S1
+
+			cmp eax, 01b
+			jz V1S2
+
+			cmp eax, 10b
+			jz V1S3
+
+			V1S1:
+				mov edx, offset vS10
+				jmp DisplayRate
+				ret
+
+			V1S2:
+				mov edx, offset vS11
+				jmp DisplayRate
+				ret
+
+			V1S3:
+				mov edx, offset vS12
+				jmp DisplayRate
+				ret
+
+			ret
+
+		V2:
+			cmp eax, 00b
+			jz V2S1
+
+			cmp eax, 01b
+			jz V2S2
+
+			cmp eax, 10b
+			jz V2S3
+
+			V2S1:
+				mov edx, offset vS20
+				jmp DisplayRate
+				ret
+			
+			V2S2:
+				mov edx, offset vS21
+				jmp DisplayRate
+				ret
+
+			V2S3:
+				mov edx, offset vS22
+				jmp DisplayRate
+				ret
+
+			ret
+
+		V25:
+			cmp eax, 00b
+			jz V3S1
+
+			cmp eax, 01b
+			jz V3S2
+
+			cmp eax, 10b
+			jz V3S3
+
+			V3S1:
+				mov edx, offset vS30
+				jmp DisplayRate
+				ret
+			
+			V3S2:
+				mov edx, offset vS31
+				jmp DisplayRate
+				ret
+
+			V3S3:
+				mov edx, offset vS32
+				jmp DisplayRate
+				ret
+			ret
+
+		SRE:
+			mov edx, offset vSRE
+			jmp DisplayRate
+			ret
+
+	ret
+
+DisplayRate:
+	call writestring
+	ret
+
+
+	TheEnd:
+		;--Clear up "Press any key"--
+		mov dh, 21
+		mov dl, 20
+		call gotoxy
+
+		xor ecx, ecx
+		call ReadChar
+
+		exit
+main ENDP
+END main

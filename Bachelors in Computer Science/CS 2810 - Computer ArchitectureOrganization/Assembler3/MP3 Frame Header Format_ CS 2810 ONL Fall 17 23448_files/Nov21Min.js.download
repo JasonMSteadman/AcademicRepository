@@ -1,0 +1,29 @@
+function afterPageContentLoaded(){"use strict"
+console.log("Running code"),$("#elearning-accordion").length>0&&($("#elearning-accordion h3").each(function(){$(this).contents().wrap('<a href="#" />')}),$("#elearning-accordion").accordion({header:"h3",heightStyle:"content",collapsible:!0,active:!1,activate:function(e,t){$.isEmptyObject(t.newHeader.offset())||$("html:not(:animated), body:not(:animated)").animate({scrollTop:t.newHeader.offset().top},"slow")}}))}function pageContentCheck(e){"use strict"
+var t=!1
+$(".show-content").length>0&&$(".show-content").children().length>0?t=!0:$("#discussion_topic").length>0&&$(".user_content").text().length>0?t=!0:$("#assignment_show .teacher-version").length>0?t=!0:$("#assignment_show .student-version").length>0?t=!0:$("#course_syllabus").length>0&&(t=!0),t?(console.log("Content has loaded"),afterPageContentLoaded()):setTimeout(function(){console.log("Still no content, check again ("+e+")"),pageContentCheck(e)},100)}var pageContentWrappersArray=["#course_home_content","#wiki_page_show","#discussion_topic","#course_syllabus","#assignment_show","#wiki_page_revisions"]
+$(document).ready(function(){"use strict"
+var e
+for(e=0;e<=pageContentWrappersArray.length;e++)if($(pageContentWrappersArray[e]).length>0){pageContentCheck(pageContentWrappersArray[e])
+break}}),$("#addUsers").live({click:function(){$("#create-users-step-1 p:first-child").html("Please enroll existing WSU students/staff/faculty using their Wildcat username (not an email address)"),$("#user_list_textarea").attr("placeholder","Examples: waldowildcat, janedoe, johndoe")}}),$("button#next-step").live({click:function(){$(".outlet").hide(),setTimeout(function(){$(".form-dialog-content small").html("<p>Examples: waldowildcat, janedoe, johndoe</p><p>If this problem persists, please contact WSU Online at 801-626-6499</p>"),$(".outlet").show()},1e3)}}),$("button.createUsersStartOver").live({click:function(){$(".outlet").hide(),setTimeout(function(){$(".form-dialog-content p").html("<p>These users had errors and will not be added. Please ensure they are formatted correctly. <small><p>Examples: waldowildcat, janedoe, johndoe</small></p><p><small>If this problem persists, please contact WSU Online at 801-626-6499</small></p>"),$(".outlet").show()},1e3)}})
+var klToolsPath="https://ciie.weber.edu/wsuonline/Canvas_tools/"
+console.log("canvasGlobal.js loading")
+var coursenum,matches,killspot
+coursenum=null,matches=location.pathname.match(/\/courses\/(.*)/),matches&&(coursenum=matches[1],killspot=coursenum.indexOf("/",0),killspot>=0&&(coursenum=coursenum.slice(0,killspot))),function(){"use strict"
+var e=$(".user_id").text(),t=["12345","37890"],o=["275134","1221281","29221","1160","2991","1417306","1314","94"],n=+new Date;(-1!==$.inArray(coursenum,t)||-1!==$.inArray(e,o))&&setTimeout(function(){($(".new_page").length>0||$("#editor_tabs").length>0&&0===$(".edit_link").length)&&($("head").append($("<link/>",{rel:"stylesheet",href:"//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.css"})),$.getScript(klToolsPath+"js/tools_variables.js",function(){console.log("tools_variables loaded")}),$.getScript(klToolsPath+"js/tools_main.js",function(){console.log("tools_main loaded")}),$.getScript(klToolsPath+"js/spectrum.js",function(){console.log("spectrum loaded")}),$("head").append($("<link/>",{rel:"stylesheet",href:klToolsPath+"css/spectrum.css?"+n})))},1e3),$("#kl_wrapper").length>0&&$.getScript(klToolsPath+"/js/tools_liveView.js",function(){console.log("tools_liveView.js Loaded.")}),setTimeout(function(){$("#kl_banner_image").length>0&&$("head").prepend("<style>#kl_banner_image {background: url(/courses/"+coursenum+"/file_contents/course%20files/global/css/images/homePageBanner.jpg) no-repeat center center; }</style>"),$("#usu-home-img").length>0&&$("head").prepend("<style>#usu-home-img {background: url(/courses/"+coursenum+"/file_contents/course%20files/global/css/images/homePageBanner.jpg) no-repeat center center; }</style>")},1e3),$(".fa").length>0&&$("head").append($("<link/>",{rel:"stylesheet",href:"//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.css?"+n}))}(),function(){function e(){d=!0,void 0!==l&&l.length>0&&n()
+var e=document.querySelector("div#DashboardCard_Container > div.ic-DashboardCard__box"),t=e.childNodes
+t.length<2||$("div.ic-DashboardCard__box").sortable({containment:"parent",items:"> div",update:a})}function t(){var t=document.querySelector("div#DashboardCard_Container > div.ic-DashboardCard__box a.ic-DashboardCard__link")
+if(t)e()
+else{var o=document.querySelector("div#DashboardCard_Container"),n=new MutationObserver(function(t){n.disconnect(),e()}),a={childList:!0}
+n.observe(o,a)}}function o(){var e=[],t=document.querySelectorAll("div#DashboardCard_Container > div.ic-DashboardCard__box a.ic-DashboardCard__link")
+if(0!==t.length){for(var o=RegExp("/courses/([0-9]+)$"),n=0;n<t.length;n++){var a=o.exec(t[n].href)
+a&&e.push(a[1])}return e}}function n(){var e=document.querySelector("div#DashboardCard_Container > div.ic-DashboardCard__box"),t=e.childNodes
+if(t.length<2)return void r()
+var n,s,i,c,d=o(),u=0,h=!1
+for(s=0;s<d.length;s++)i=l[s],n=l.indexOf(i),-1===n&&(c=t[s],e.insertBefore(c,t[u]),d.splice(s,1),d.splice(u,0,i),u++)
+for(n=0;n<l.length;n++)i=l[n],s=d.indexOf(i),-1!==s?s!==u?(c=t[s],e.insertBefore(c,t[u]),d.splice(s,1),d.splice(u,0,i),u++):u++:h=!0
+h&&a()}function a(e,t){var n=o(),a="/api/v1/users/self/custom_data"+i,s={ns:c,data:n.join(",")}
+$.ajax({url:a,type:"PUT",data:s})}function s(){var e="/api/v1/users/self/custom_data"+i,t={ns:c}
+$.getJSON(e,t,function(e){l=e.data.split(","),d&&n()})}function r(){var e="/api/v1/users/self/custom_data"+i,t={ns:c}
+$.ajax({url:e,type:"DELETE",data:t}),l=void 0}if("/"===window.location.pathname){var l,i="/dashboard/order",c="canvancement",d=!1
+try{s(),t()}catch(u){console.log(u)}}}()
