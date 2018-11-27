@@ -25,9 +25,11 @@ public abstract class PictureTile extends Tile
 	{
 		super.paintComponent(g);
 		ImageIcon		image;
-		String			imgName = "images/" + name + ".png";
+		String			imgName = name + ".png";
 
-		image = new ImageIcon(imgName);
+		image = new ImageIcon(Toolkit.getDefaultToolkit().getImage(PictureTile.class.getResource(imgName)));
+
+		//image = new ImageIcon(imgName);
 			
 		image = new ImageIcon(image.getImage().getScaledInstance(FACE - 4, FACE - 4, Image.SCALE_SMOOTH));
 		

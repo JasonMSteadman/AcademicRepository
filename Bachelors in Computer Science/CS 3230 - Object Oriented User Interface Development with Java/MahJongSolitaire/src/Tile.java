@@ -11,6 +11,7 @@ public class Tile extends JPanel
 	private int iX;
 	private int iY;
 	private int iZ;
+	private int iZOrder;
 	
 	public Tile()
 	{
@@ -45,7 +46,17 @@ public class Tile extends JPanel
 		return iZ;
 	} 
 	
-
+	//	Set z order
+	public void setZOrder(int zOrder)
+	{
+		iZOrder = zOrder;
+	}
+	
+	//	Get z order
+	public int getZOrder()
+	{
+		return iZOrder;
+	}
 	
 	//Check to see if other is a child of the Tile class
 	public boolean matches(Tile other)

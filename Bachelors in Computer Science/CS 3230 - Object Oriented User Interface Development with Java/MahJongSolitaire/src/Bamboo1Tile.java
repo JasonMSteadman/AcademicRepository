@@ -5,7 +5,7 @@ public class Bamboo1Tile extends PictureTile
 	public Bamboo1Tile()
 	{
 		//Temp name until real image name is known
-		super("sparrow");
+		super("Sparrow");
 	}
 	
 	//Override toString()
