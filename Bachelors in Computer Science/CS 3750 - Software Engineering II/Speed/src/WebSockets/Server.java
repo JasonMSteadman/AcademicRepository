@@ -15,7 +15,7 @@ import javax.json.JsonWriter;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.Session;
-
+import javax.websocket.OnError;
 
 @ServerEndpoint("/Server")
 public class Server{
@@ -24,6 +24,7 @@ public class Server{
 	static Board game;
 	static String playerOne = null; 
 	static String playerTwo = null;
+	static boolean isPlaying = false;
 	
 	@OnOpen
 	public void handleOpen(Session session) 
@@ -52,13 +53,13 @@ public class Server{
 			sRole = "Spectator";
 		}
 		
-		try
+		try 
 		{
 			session.getBasicRemote().sendText(buildJsonData("role", sRole));
-		}
-		catch(Exception e)
+		} 
+		catch (IOException e1) 
 		{
-			//	TODO	Make more specific 	
+			e1.printStackTrace();
 		}
 		
 		users.add(session);
@@ -67,31 +68,39 @@ public class Server{
 			game = new Board();
 			game.setPlayer1(playerOne);
 			game.setPlayer2(playerTwo);
-			try
+
+			try 
 			{
 				refreshBoard();
 				bStartGame = false;
-			}
-			catch (Exception e)
+				isPlaying = true;
+			} 
+			catch (IOException e) 
 			{
-				//	TODO 	Make more specific.
-			}
+				e.printStackTrace();
+			}	
 		}
 	}
 	
 	@OnMessage
-	public void handleMessage(String message, Session session) throws IOException
+	public void handleMessage(String message, Session session)
 	{
 		//	TODO  figure out how to create JSON object in JavaScript		
-		if(playerOne == session.getId() || playerTwo == session.getId() )
+		if(isPlaying && (playerOne == session.getId() || playerTwo == session.getId()))
 		{
 			//	Make player move
 			game.playerMove(session.getId(), message);
 			
 			//	Update board state
-			refreshBoard();
+			try 
+			{
+				refreshBoard();
+			} catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
 		}
-		
+		return;
 	}
 	
 	@OnClose
@@ -101,30 +110,54 @@ public class Server{
 		if(playerOne == session.getId())
 		{
 			playerOne = null;
-			game.setPlayer1(null);
+			
+			if(game != null)
+				game.setPlayer1(null);
 		}
 		//	See if player two is leaving
 		else if(playerTwo == session.getId())
 		{
 			playerTwo = null;
-			game.setPlayer2(null);
+			if(game != null)
+				game.setPlayer2(null);
 		}
 		
 		//	End game if one of the players leave
 		if(playerOne == null || playerTwo == null)
 		{
-			game.resetBoard();
+			if(game != null)
+				game.resetBoard();
+			isPlaying = false;
 		}
+		
+		users.remove(session);
+
 		//	Refresh board state
 		try
 		{
-			refreshBoard();
+			if(game != null)
+				refreshBoard();
 		}
-		catch (Exception e)
+		catch (IOException e) 
 		{
-			//	TODO 	Make more specific.
+			e.printStackTrace();
 		}		
-		users.remove(session);
+		
+		try 
+		{
+			session.close();
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+		}
+		return;
+	}
+	
+	@OnError
+	public void error(Session session, Throwable t) 
+	{
+		
 	}
 	
 	public String buildJsonData(String attribute, String message)
@@ -152,6 +185,5 @@ public class Server{
 			//	Send new board state
 			currentSession.getBasicRemote().sendText(stringWriter.toString());	
 		}
-	}
-	
+	}	
 }

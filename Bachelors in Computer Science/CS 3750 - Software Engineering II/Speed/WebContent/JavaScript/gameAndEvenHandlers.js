@@ -1,4 +1,5 @@
-var websocket = new WebSocket("ws://localhost:8080/Speed/Server")	
+var websocket = new WebSocket("wss://speedse2a3.azurewebsites.net/Server");	
+//var websocket = new WebSocket("ws:localhost:8080/Speed/Server");	
 
 websocket.onmessage = function processMessage(message){
 	var jsonData = JSON.parse(message.data);
@@ -8,7 +9,6 @@ websocket.onmessage = function processMessage(message){
 			document.getElementById("role").innerHTML = jsonData.role;
 		}
 		if(jsonData.hasOwnProperty("a1")){
-			
 			document.getElementById("a1").src = jsonData.a1;
 			document.getElementById("a2").src = jsonData.a2;
 			document.getElementById("a3").src = jsonData.a3;
